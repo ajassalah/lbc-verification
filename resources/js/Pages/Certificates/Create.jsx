@@ -9,11 +9,25 @@ import SecondaryButton from '@/Components/SecondaryButton';
 import { motion } from 'framer-motion';
 import axios from 'axios';
 
-export default function Create({ auth, courses, learners, centers = [], nextReferenceNo = '' }) {
+const gradePointLabels = {
+    'A+': '5.00',
+    A: '4.00',
+    B: '3.00',
+    C: '2.00',
+    D: '1.00',
+    E: 'Absent',
+};
+
+export default function Create({
+    auth,
+    courses,
+    learners,
+    mediumOfInstructionOptions = [],
+    modeOfStudyOptions = [],
+    referenceYear = new Date().getFullYear()
+}) {
     const courseOptions = Array.isArray(courses) ? courses : (courses?.data || []);
     const learnerOptions = Array.isArray(learners) ? learners : (learners?.data || []);
-    const centerOptions = Array.isArray(centers) ? centers : (centers?.data || []);
-    const allowManualCertificateReference = Boolean(auth.user?.allow_manual_certificate_reference);
     const [selectedCourse, setSelectedCourse] = useState(null);
     const [modulesByYear, setModulesByYear] = useState({});
     const [years, setYears] = useState([]);
@@ -22,13 +36,17 @@ export default function Create({ auth, courses, learners, centers = [], nextRefe
     const { data, setData, post, reset, processing, errors } = useForm({
         learner_id: '',
         course_id: '',
-        reference_no: allowManualCertificateReference ? '' : nextReferenceNo,
+        reference_no: '',
         course_start_date: '',
         course_end_date: '',
         awarding_date: '',
+        date_of_exam: '',
+        completion_letter_date: '',
+        medium_of_instruction: '',
+        mode_of_study: '',
         specialization: '',
-        center_name: '',
         status: 'Pending',
+        grade: '',
         created_by: auth.user.id,
         gender: '',
         country: '',
@@ -38,6 +56,21 @@ export default function Create({ auth, courses, learners, centers = [], nextRefe
             years: []
         })
     });
+
+    const buildCertificateReference = (courseCode, learnerNumber) => {
+        if (!courseCode || !learnerNumber) {
+            return '';
+        }
+
+        return `LBC/DIP/${courseCode}/${referenceYear}/${learnerNumber}`;
+    };
+
+    useEffect(() => {
+        const course = courseOptions.find(c => c.id === parseInt(data.course_id));
+        const learner = learnerOptions.find((learner) => learner.id === parseInt(data.learner_id));
+
+        setData('reference_no', buildCertificateReference(course?.code, learner?.learner_id));
+    }, [data.course_id, data.learner_id]);
 
     // Update modules data when selected course changes
     useEffect(() => {
@@ -123,20 +156,22 @@ export default function Create({ auth, courses, learners, centers = [], nextRefe
         calculateCumulativeStats(modulesData);
     };
 
+    const getGradePointLabel = (grade) => gradePointLabels[grade] || 'N/A';
+
     const getGradingType = (modules = []) => {
         if (!modules.length) {
             return 'Pending';
         }
 
-        if (modules.some((module) => module.grade === 'FAIL')) {
-            return 'FAIL';
+        if (modules.some((module) => !module.grade)) {
+            return 'Pending';
         }
 
-        if (modules.every((module) => module.grade === 'PASS')) {
-            return 'PASS';
+        if (modules.some((module) => module.grade === 'E')) {
+            return 'Absent';
         }
 
-        return 'Pending';
+        return 'Completed';
     };
 
     const calculateYearStats = (modulesData, yearIndex) => {
@@ -162,7 +197,7 @@ export default function Create({ auth, courses, learners, centers = [], nextRefe
         setData(data => ({
             ...data,
             cumulative_credits_earned: totalCredits,
-            cumulative_grade_point_average: gradingType === 'PASS' ? 1 : 0
+            cumulative_grade_point_average: gradingType === 'Completed' ? 1 : 0
         }));
     };
 
@@ -227,11 +262,13 @@ export default function Create({ auth, courses, learners, centers = [], nextRefe
             moduleIndex,
         }))
     );
-    const totalModuleCredits = modulesForDisplay.reduce(
-        (total, module) => total + (parseInt(module.credits, 10) || parseInt(module.credit_count, 10) || 0),
-        0
-    );
-    const hasSelectedCenter = centerOptions.some((center) => center.name === data.center_name);
+    const totalModulePoints = modulesForDisplay.reduce((total, module) => {
+        const point = parseFloat(gradePointLabels[module.grade]);
+
+        return Number.isNaN(point) ? total : total + point;
+    }, 0);
+    const selectedLearner = learnerOptions.find((learner) => learner.id === parseInt(data.learner_id));
+    const selectedCourseForLetter = courseOptions.find((course) => course.id === parseInt(data.course_id)) || selectedCourse;
 
     const formatLevelValue = (level) => {
         if (level === null || level === undefined || level === '') {
@@ -240,6 +277,34 @@ export default function Create({ auth, courses, learners, centers = [], nextRefe
 
         return String(level).replace(/^Level\s*/i, '').trim() || 'N/A';
     };
+
+    const formatDisplayDate = (date) => {
+        if (!date) {
+            return 'N/A';
+        }
+
+        const parsedDate = new Date(date);
+
+        if (Number.isNaN(parsedDate.getTime())) {
+            return date;
+        }
+
+        return parsedDate.toLocaleDateString(undefined, {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+        });
+    };
+
+    const completionLetterDetails = [
+        ['Full Name', selectedLearner?.full_name],
+        ['Date of Birth', formatDisplayDate(selectedLearner?.date_of_birth)],
+        ['Nationality', selectedLearner?.nationality],
+        ['Course Title', selectedCourseForLetter?.name],
+        ['Duration', selectedCourseForLetter?.duration ? `${selectedCourseForLetter.duration} months` : null],
+        ['Commencement Date', formatDisplayDate(data.course_start_date)],
+        ['Course End Date', formatDisplayDate(data.course_end_date)],
+    ];
 
     return (
         <AuthenticatedLayout
@@ -269,45 +334,6 @@ export default function Create({ auth, courses, learners, centers = [], nextRefe
                             >
                                 {/* Certificate Basic Information */}
                                 <h3 className="font-medium text-lg text-gray-700">Certificate Information</h3>
-
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <motion.div variants={itemVariants}>
-                                        <InputLabel htmlFor="reference_no" value="Certificate/Reference Number" />
-                                        <TextInput
-                                            id="reference_no"
-                                            name="reference_no"
-                                            value={data.reference_no}
-                                            onChange={(e) => setData('reference_no', e.target.value)}
-                                            readOnly={!allowManualCertificateReference}
-                                            className={`mt-1 block w-full ${allowManualCertificateReference ? '' : 'bg-gray-100'}`}
-                                            required
-                                        />
-                                        <InputError message={errors.reference_no} className="mt-2" />
-                                    </motion.div>
-
-                                    <motion.div variants={itemVariants}>
-                                        <InputLabel htmlFor="center_name" value="Center Name" />
-                                        <select
-                                            id="center_name"
-                                            name="center_name"
-                                            value={data.center_name}
-                                            onChange={(e) => setData('center_name', e.target.value)}
-                                            className="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm"
-                                            required
-                                        >
-                                            <option value="">Select Center</option>
-                                            {!hasSelectedCenter && data.center_name && (
-                                                <option value={data.center_name}>{data.center_name}</option>
-                                            )}
-                                            {centerOptions.map((center) => (
-                                                <option key={center.id} value={center.name}>
-                                                    {`${center.name} (${center.number})`}
-                                                </option>
-                                            ))}
-                                        </select>
-                                        <InputError message={errors.center_name} className="mt-2" />
-                                    </motion.div>
-                                </div>
 
                                 {/* Learner Selection */}
                                 <motion.div variants={itemVariants}>
@@ -351,6 +377,19 @@ export default function Create({ auth, courses, learners, centers = [], nextRefe
                                     <InputError message={errors.course_id} className="mt-2" />
                                 </motion.div>
 
+                                <motion.div variants={itemVariants}>
+                                    <InputLabel htmlFor="reference_no" value="Certificate/Reference Number" />
+                                    <TextInput
+                                        id="reference_no"
+                                        name="reference_no"
+                                        value={data.reference_no}
+                                        readOnly
+                                        className="mt-1 block w-full bg-gray-100"
+                                        required
+                                    />
+                                    <InputError message={errors.reference_no} className="mt-2" />
+                                </motion.div>
+
                                 {/* Status Selection */}
                                 <motion.div variants={itemVariants}>
                                     <InputLabel htmlFor="status" value="Status" />
@@ -369,6 +408,23 @@ export default function Create({ auth, courses, learners, centers = [], nextRefe
                                 </motion.div>
 
                                 <motion.div variants={itemVariants}>
+                                    <InputLabel htmlFor="grade" value="Grade" />
+                                    <select
+                                        id="grade"
+                                        name="grade"
+                                        value={data.grade}
+                                        onChange={(e) => setData('grade', e.target.value)}
+                                        className="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm"
+                                    >
+                                        <option value="">Select Grade</option>
+                                        <option value="Pass">Pass</option>
+                                        <option value="Merit">Merit</option>
+                                        <option value="Destination">Destination</option>
+                                    </select>
+                                    <InputError message={errors.grade} className="mt-2" />
+                                </motion.div>
+
+                                <motion.div variants={itemVariants}>
                                     <InputLabel htmlFor="awarding_date" value="Awarding Date" />
                                     <TextInput
                                         id="awarding_date"
@@ -382,9 +438,9 @@ export default function Create({ auth, courses, learners, centers = [], nextRefe
                                     <InputError message={errors.awarding_date} className="mt-2" />
                                 </motion.div>
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                     <motion.div variants={itemVariants}>
-                                        <InputLabel htmlFor="course_start_date" value="Course Start Date" />
+                                        <InputLabel htmlFor="course_start_date" value="Starting Date of Programme" />
                                         <TextInput
                                             id="course_start_date"
                                             name="course_start_date"
@@ -397,7 +453,7 @@ export default function Create({ auth, courses, learners, centers = [], nextRefe
                                     </motion.div>
 
                                     <motion.div variants={itemVariants}>
-                                        <InputLabel htmlFor="course_end_date" value="Course End Date" />
+                                        <InputLabel htmlFor="course_end_date" value="End Date of Programme" />
                                         <TextInput
                                             id="course_end_date"
                                             name="course_end_date"
@@ -408,7 +464,85 @@ export default function Create({ auth, courses, learners, centers = [], nextRefe
                                         />
                                         <InputError message={errors.course_end_date} className="mt-2" />
                                     </motion.div>
+
+                                    <motion.div variants={itemVariants}>
+                                        <InputLabel htmlFor="date_of_exam" value="Date of Exam" />
+                                        <TextInput
+                                            id="date_of_exam"
+                                            name="date_of_exam"
+                                            type="date"
+                                            value={data.date_of_exam}
+                                            onChange={(e) => setData('date_of_exam', e.target.value)}
+                                            className="mt-1 block w-full"
+                                        />
+                                        <InputError message={errors.date_of_exam} className="mt-2" />
+                                    </motion.div>
                                 </div>
+
+                                <motion.div
+                                    variants={itemVariants}
+                                    className="border border-gray-200 rounded-lg bg-gray-50 p-4"
+                                >
+                                    <h3 className="font-medium text-lg text-gray-700 mb-4">Completion Letter</h3>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div>
+                                            <InputLabel htmlFor="completion_letter_date" value="Date" />
+                                            <TextInput
+                                                id="completion_letter_date"
+                                                name="completion_letter_date"
+                                                type="date"
+                                                value={data.completion_letter_date}
+                                                onChange={(e) => setData('completion_letter_date', e.target.value)}
+                                                className="mt-1 block w-full"
+                                            />
+                                            <InputError message={errors.completion_letter_date} className="mt-2" />
+                                        </div>
+
+                                        <div>
+                                            <InputLabel htmlFor="medium_of_instruction" value="Medium of Instruction" />
+                                            <select
+                                                id="medium_of_instruction"
+                                                name="medium_of_instruction"
+                                                value={data.medium_of_instruction}
+                                                onChange={(e) => setData('medium_of_instruction', e.target.value)}
+                                                className="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm"
+                                            >
+                                                <option value="">Select Medium of Instruction</option>
+                                                {mediumOfInstructionOptions.map((option) => (
+                                                    <option key={option} value={option}>{option}</option>
+                                                ))}
+                                            </select>
+                                            <InputError message={errors.medium_of_instruction} className="mt-2" />
+                                        </div>
+
+                                        <div>
+                                            <InputLabel htmlFor="mode_of_study" value="Mode of Study" />
+                                            <select
+                                                id="mode_of_study"
+                                                name="mode_of_study"
+                                                value={data.mode_of_study}
+                                                onChange={(e) => setData('mode_of_study', e.target.value)}
+                                                className="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm"
+                                            >
+                                                <option value="">Select Mode of Study</option>
+                                                {modeOfStudyOptions.map((option) => (
+                                                    <option key={option} value={option}>{option}</option>
+                                                ))}
+                                            </select>
+                                            <InputError message={errors.mode_of_study} className="mt-2" />
+                                        </div>
+                                    </div>
+
+                                    <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        {completionLetterDetails.map(([label, value]) => (
+                                            <div key={label} className="rounded-md border border-gray-200 bg-white px-4 py-3">
+                                                <div className="text-xs font-semibold uppercase text-gray-500">{label}</div>
+                                                <div className="mt-1 text-sm font-medium text-gray-900">{value || 'N/A'}</div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </motion.div>
 
                                 {/* Module Information */}
                                 {loading ? (
@@ -431,7 +565,7 @@ export default function Create({ auth, courses, learners, centers = [], nextRefe
                                                             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Unit Ref</th>
                                                             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Module Name</th>
                                                             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Level</th>
-                                                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Credits</th>
+                                                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Points</th>
                                                             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Grade</th>
                                                         </tr>
                                                     </thead>
@@ -441,7 +575,9 @@ export default function Create({ auth, courses, learners, centers = [], nextRefe
                                                                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{module.code}</td>
                                                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{module.name}</td>
                                                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{formatLevelValue(module.level)}</td>
-                                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{module.credits || module.credit_count || 0}</td>
+                                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                                    {getGradePointLabel(parsedModulesData.years[module.yearIndex]?.modules[module.moduleIndex]?.grade || '')}
+                                                                </td>
                                                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                                                     <select
                                                                         value={parsedModulesData.years[module.yearIndex]?.modules[module.moduleIndex]?.grade || ''}
@@ -449,8 +585,12 @@ export default function Create({ auth, courses, learners, centers = [], nextRefe
                                                                         className="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm"
                                                                     >
                                                                         <option value="">Select Grade</option>
-                                                                        <option value="PASS">PASS</option>
-                                                                        <option value="FAIL">FAIL</option>
+                                                                        <option value="A+">A+</option>
+                                                                        <option value="A">A</option>
+                                                                        <option value="B">B</option>
+                                                                        <option value="C">C</option>
+                                                                        <option value="D">D</option>
+                                                                        <option value="E">E</option>
                                                                     </select>
                                                                 </td>
                                                             </tr>
@@ -462,14 +602,13 @@ export default function Create({ auth, courses, learners, centers = [], nextRefe
                                             <div className="mt-4 bg-gray-50 p-3 rounded-md">
                                                 <div className="text-sm text-gray-700">
                                                     <p><strong>Total Modules:</strong> {modulesForDisplay.length}</p>
-                                                    <p><strong>Total Credits:</strong> {totalModuleCredits}</p>
+                                                    <p><strong>Total Points:</strong> {totalModulePoints.toFixed(2)}</p>
                                                 </div>
                                             </div>
                                         </div>
 
                                         <div className="mt-6 bg-blue-50 p-4 rounded-lg border border-blue-200">
                                             <h4 className="font-medium text-blue-700 mb-2">Cumulative Statistics</h4>
-                                            <p><strong>TOTAL CREDIT ACHIEVED:</strong> {data.cumulative_credits_earned}</p>
                                             <p><strong>GRADING TYPE:</strong> {cumulativeGradingType}</p>
                                         </div>
                                     </motion.div>

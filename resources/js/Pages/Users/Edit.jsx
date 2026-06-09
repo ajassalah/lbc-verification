@@ -47,7 +47,6 @@ export default function Edit({ auth, user }) {
         password_confirmation: '',
         role: user.data.role || 'user',
         allow_manual_learner_id: Boolean(user.data.allow_manual_learner_id),
-        allow_manual_certificate_reference: Boolean(user.data.allow_manual_certificate_reference),
     });
 
     const handleSubmit = (e) => {
@@ -232,15 +231,8 @@ export default function Edit({ auth, user }) {
                                             checked={data.allow_manual_learner_id}
                                             onChange={(checked) => setData('allow_manual_learner_id', checked)}
                                         />
-                                        <ToggleField
-                                            id="allow_manual_certificate_reference"
-                                            label="Certificate/Reference Number auto generation"
-                                            checked={data.allow_manual_certificate_reference}
-                                            onChange={(checked) => setData('allow_manual_certificate_reference', checked)}
-                                        />
                                     </div>
                                     <InputError message={errors.allow_manual_learner_id} className="mt-2" />
-                                    <InputError message={errors.allow_manual_certificate_reference} className="mt-2" />
                                 </motion.div>
                             </motion.div>
 

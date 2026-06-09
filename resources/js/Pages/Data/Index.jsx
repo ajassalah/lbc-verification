@@ -9,13 +9,14 @@ import {
     AcademicCapIcon,
     CircleStackIcon,
     PlusIcon,
-    SparklesIcon,
     TrashIcon,
 } from '@heroicons/react/24/outline';
 
 const optionLabels = {
     course_faculty: 'Faculty',
     module_level: 'Module Level',
+    medium_of_instruction: 'Medium of Instruction',
+    mode_of_study: 'Mode of Study',
 };
 
 function OptionSection({ title, type, values, placeholder, canDelete }) {
@@ -48,7 +49,7 @@ function OptionSection({ title, type, values, placeholder, canDelete }) {
             <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between gap-4">
                 <div>
                     <h3 className="text-base font-semibold text-gray-900">{title}</h3>
-                    <p className="text-sm text-gray-500">{optionLabels[type]} options used in course setup.</p>
+                    <p className="text-sm text-gray-500">{optionLabels[type]} options used in forms.</p>
                 </div>
                 <CircleStackIcon className="h-5 w-5 text-blue-500 shrink-0" />
             </div>
@@ -99,6 +100,8 @@ function OptionSection({ title, type, values, placeholder, canDelete }) {
 export default function Index({ auth, options = {} }) {
     const courseFaculty = options.course_faculty || [];
     const moduleLevels = options.module_level || [];
+    const mediumOfInstruction = options.medium_of_instruction || [];
+    const modeOfStudy = options.mode_of_study || [];
     const isAdmin = auth.user?.role === 'admin';
 
     return (
@@ -115,20 +118,6 @@ export default function Index({ auth, options = {} }) {
                 transition={{ duration: 0.25 }}
             >
                 <div className="max-w-7xl mx-auto space-y-6">
-                    <section className="bg-white border border-gray-200 rounded-lg p-5">
-                        <div className="flex items-start gap-4">
-                            <div className="rounded-md bg-blue-50 p-3">
-                                <SparklesIcon className="h-6 w-6 text-blue-600" />
-                            </div>
-                            <div>
-                                <h3 className="text-base font-semibold text-gray-900">Auto Generation</h3>
-                                <p className="mt-1 text-sm text-gray-600">
-                                    Learner IDs and certificate reference numbers are generated automatically by default. Manual entry is controlled per user in the Users section.
-                                </p>
-                            </div>
-                        </div>
-                    </section>
-
                     <OptionSection
                         title="Faculty"
                         type="course_faculty"
@@ -148,6 +137,29 @@ export default function Index({ auth, options = {} }) {
                                 type="module_level"
                                 values={moduleLevels}
                                 placeholder="Add module level"
+                                canDelete={isAdmin}
+                            />
+                        </div>
+                    </section>
+
+                    <section>
+                        <div className="py-2 flex items-center gap-3">
+                            <AcademicCapIcon className="h-5 w-5 text-blue-600" />
+                            <h3 className="text-base font-semibold text-gray-900">Completion Letter</h3>
+                        </div>
+                        <div className="mt-3 grid grid-cols-1 xl:grid-cols-2 gap-5">
+                            <OptionSection
+                                title="Medium of Instruction"
+                                type="medium_of_instruction"
+                                values={mediumOfInstruction}
+                                placeholder="Add medium of instruction"
+                                canDelete={isAdmin}
+                            />
+                            <OptionSection
+                                title="Mode of Study"
+                                type="mode_of_study"
+                                values={modeOfStudy}
+                                placeholder="Add mode of study"
                                 canDelete={isAdmin}
                             />
                         </div>

@@ -5,6 +5,9 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
         <title>Uni Villa Rica</title>
+        <link rel="icon" href="{{ asset('image/lbc-logo.png') }}?v=lbc" type="image/png">
+        <link rel="shortcut icon" href="{{ asset('image/lbc-logo.png') }}?v=lbc" type="image/png">
+        <link rel="apple-touch-icon" href="{{ asset('image/lbc-logo.png') }}?v=lbc">
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
@@ -22,7 +25,7 @@
                 <div class="relative w-full max-w-2xl px-6 lg:max-w-7xl">
                     <header class="grid grid-cols-2 items-center gap-2 py-10 lg:grid-cols-3">
                         <div class="flex lg:justify-center lg:col-start-2">
-                            <img src="{{ asset('image/ukee logo.png') }}" alt="UKee Logo" class="h-12 w-auto lg:h-16" />
+                            <img src="{{ asset('image/lbc-logo.png') }}" alt="London Business Campus Logo" class="h-12 w-auto lg:h-16" />
                         </div>
                         @if (Route::has('login'))
                             <nav class="-mx-3 flex flex-1 justify-end">

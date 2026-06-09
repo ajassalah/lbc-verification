@@ -28,7 +28,6 @@ class StoreUserRequest extends FormRequest
             'password' => ['required', 'confirmed', Password::defaults()],
             'role' => ['required', 'string', 'in:user,admin'],
             'allow_manual_learner_id' => ['required', 'boolean'],
-            'allow_manual_certificate_reference' => ['required', 'boolean'],
         ];
     }
 }

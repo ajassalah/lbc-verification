@@ -101,7 +101,7 @@ class UserController extends Controller
             'password' => Hash::make($validated['password']),
             'role' => $validated['role'],
             'allow_manual_learner_id' => $validated['allow_manual_learner_id'],
-            'allow_manual_certificate_reference' => $validated['allow_manual_certificate_reference'],
+            'allow_manual_certificate_reference' => false,
         ]);
 
         return redirect()->route('users.index')
@@ -150,7 +150,6 @@ class UserController extends Controller
             'email' => 'required|email|max:255|unique:users,email,' . $id,
             'role' => 'required|string|in:user,admin',
             'allow_manual_learner_id' => 'required|boolean',
-            'allow_manual_certificate_reference' => 'required|boolean',
             'password' => 'nullable|string|min:8|confirmed',
         ]);
 

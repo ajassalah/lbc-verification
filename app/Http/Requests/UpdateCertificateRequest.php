@@ -33,10 +33,13 @@ class UpdateCertificateRequest extends FormRequest
             'course_end_date' => 'nullable|date|after:course_start_date',
             'awarding_date' => 'required|date',
             'date_of_exam' => 'nullable|date',
+            'completion_letter_date' => 'nullable|date',
+            'medium_of_instruction' => 'nullable|string|max:255',
+            'mode_of_study' => 'nullable|string|max:255',
             'specialization' => 'nullable|string|max:255',
             'center_name' => 'nullable|string|max:255',
             'status' => 'required|string|in:Pending,Verified',
-            'grade' => 'nullable|string|in:Pass,Merit,Distinction',
+            'grade' => 'nullable|string|in:Pass,Merit,Destination',
             'modules_data' => 'required|json',
         ];
     }

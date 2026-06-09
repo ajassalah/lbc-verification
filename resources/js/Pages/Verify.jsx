@@ -250,8 +250,21 @@ export default function Verify({ certificate, reference_no, certificate_type }) 
             : maskedIdNumber || (idType ? String(idType).toUpperCase() : null);
     const gradingType = (() => {
         if (certificate_type === 'old') {
-            return null;
+            return certificate?.grading_type;
         }
+
+        return certificate?.grade || null;
+    })();
+
+    const modulePointsEarned = (() => {
+        const gradePointLabels = {
+            'A+': '5.00',
+            A: '4.00',
+            B: '3.00',
+            C: '2.00',
+            D: '1.00',
+            E: 'Absent',
+        };
 
         const modulesData = certificate?.modules_data;
         let parsedModulesData = modulesData;
@@ -271,17 +284,13 @@ export default function Verify({ certificate, reference_no, certificate_type }) 
             return null;
         }
 
-        const grades = modules.map((module) => String(module?.grade || '').toUpperCase());
+        const total = modules.reduce((sum, module) => {
+            const point = parseFloat(gradePointLabels[String(module?.grade || '').toUpperCase()]);
 
-        if (grades.includes('FAIL')) {
-            return 'FAIL';
-        }
+            return Number.isNaN(point) ? sum : sum + point;
+        }, 0);
 
-        if (grades.every((grade) => grade === 'PASS')) {
-            return 'PASS';
-        }
-
-        return 'PENDING';
+        return total ? total.toFixed(2) : null;
     })();
 
     const learnerRows =
@@ -307,29 +316,27 @@ export default function Verify({ certificate, reference_no, certificate_type }) 
         certificate_type === 'old'
             ? [
                   ['Course', certificate?.course_name],
-                  ['Credits Earned', certificate?.cumulative_credits_earned],
+                  ['Points Earned', certificate?.cumulative_credits_earned],
                   ['Grading Type', gradingType],
                   ['Duration', certificate?.course_duration],
                   ['Start Date', formatDate(certificate?.course_start_date)],
                   ['End Date', formatDate(certificate?.course_end_date)],
                   ['Award Date', formatDate(certificate?.awarding_date)],
-                  ['Awarding Institution', certificate?.center_name],
                   ['Status', certificate?.status],
               ]
             : [
                   ['Course', courseLabel],
-                  ['Credits Earned', certificate?.cumulative_credits_earned],
+                  ['Points Earned', modulePointsEarned],
                   ['Grading Type', gradingType],
                   ['Start Date', formatDate(certificate?.course_start_date)],
                   ['End Date', formatDate(certificate?.course_end_date)],
                   ['Award Date', formatDate(certificate?.awarding_date)],
-                  ['Awarding Institution', certificate?.center_name],
                   ['Status', certificate?.status],
               ];
 
     return (
         <>
-            <Head title="UKEE Certificate Verification" />
+            <Head title="LBC Certificate Verification" />
 
             <div className="relative min-h-screen overflow-hidden bg-[radial-gradient(circle_at_top,_#f8fbff_0%,_#eef4fb_48%,_#e7eef8_100%)] text-slate-900">
                 <div className="pointer-events-none absolute inset-0">
@@ -345,7 +352,7 @@ export default function Verify({ certificate, reference_no, certificate_type }) 
                             </Link>
 
                             <h1 className="mt-5 text-3xl font-semibold tracking-tight text-slate-900 sm:mt-6 sm:text-4xl">
-                                UKEE Certificate Verification
+                                LBC Certificate Verification
                             </h1>
                             <p className="mt-3 text-base text-slate-600 sm:text-lg">
                                 Secure &amp; Reliable Certificate Authentication
@@ -358,8 +365,9 @@ export default function Verify({ certificate, reference_no, certificate_type }) 
                                     Certificate Verification
                                 </h2>
                                 <p className="mx-auto mt-4 max-w-xl text-lg leading-8 text-slate-500">
-                                    Enter the certificate reference number below to verify and
-                                    view the authentic certificate details.
+                                    Enter the learner number or certificate
+                                    reference number below to verify and view the
+                                    authentic certificate details.
                                 </p>
                             </div>
 
@@ -368,7 +376,7 @@ export default function Verify({ certificate, reference_no, certificate_type }) 
                                     htmlFor="reference_no"
                                     className="block text-sm font-semibold text-slate-700"
                                 >
-                                    Certificate Reference Number
+                                    Learner Number or Certificate Reference Number
                                 </label>
 
                                 <div className="relative mt-3">
@@ -377,7 +385,7 @@ export default function Verify({ certificate, reference_no, certificate_type }) 
                                         type="text"
                                         value={data.reference_no}
                                         onChange={(e) => setData('reference_no', e.target.value)}
-                                        placeholder="Enter reference number"
+                                        placeholder="Enter learner number or certificate reference number"
                                         autoFocus
                                         required
                                         className="h-14 w-full rounded-2xl border border-slate-300 bg-white px-4 pr-12 text-base text-slate-900 shadow-sm outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100 sm:h-16 sm:px-5 sm:pr-14 sm:text-lg"
@@ -422,12 +430,12 @@ export default function Verify({ certificate, reference_no, certificate_type }) 
                                             Certificate Not Found
                                         </h3>
                                         <p className="mt-3 text-base leading-7 text-slate-600">
-                                            The certificate with reference number{' '}
+                                            The certificate with learner number or certificate reference number{' '}
                                             <span className="font-semibold text-slate-800">
                                                 {data.reference_no}
                                             </span>{' '}
                                             could not be found in our system. Please confirm that
-                                            you are using the certificate reference number.
+                                            you are using the learner number or certificate reference number.
                                         </p>
                                     </div>
                                 </div>
@@ -445,9 +453,9 @@ export default function Verify({ certificate, reference_no, certificate_type }) 
                                             Verification Pending
                                         </h3>
                                         <p className="mt-3 text-base leading-7 text-slate-600">
-                                            The certificate with reference number{' '}
+                                            The certificate with learner number or certificate reference number{' '}
                                             <span className="font-semibold text-slate-800">
-                                                {certificate.reference_no}
+                                                {reference_no}
                                             </span>{' '}
                                             is currently pending verification. Please check again
                                             later or contact the institution for confirmation.
@@ -464,7 +472,7 @@ export default function Verify({ certificate, reference_no, certificate_type }) 
                                         Certificate Details
                                     </h3>
                                     <div className="mt-4 inline-flex rounded-full bg-blue-50 px-4 py-2 text-sm font-medium text-blue-700 shadow-sm">
-                                        {certificate.reference_no}
+                                        {reference_no}
                                     </div>
                                     <div className="mx-auto mt-4 h-1 w-20 rounded-full bg-blue-600" />
                                 </div>
@@ -552,7 +560,7 @@ export default function Verify({ certificate, reference_no, certificate_type }) 
                         )}
 
                         <footer className="mt-10 text-center text-slate-600">
-                            <p className="text-lg font-medium">UKEE &copy; {currentYear}</p>
+                            <p className="text-lg font-medium">LBC &copy; {currentYear}</p>
                             <p className="mt-2 text-base">Secure Certificate Verification System</p>
                         </footer>
                     </div>

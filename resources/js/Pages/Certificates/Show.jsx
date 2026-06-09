@@ -13,6 +13,15 @@ const PROOF_TYPE_TEXT = {
     Voter: "Voter ID"
 };
 
+const gradePointLabels = {
+    'A+': '5.00',
+    A: '4.00',
+    B: '3.00',
+    C: '2.00',
+    D: '1.00',
+    E: 'Absent',
+};
+
 // Helper component for certificate details - with improved styling
 const CertificateDetail = ({ label, value, capitalize = false, uppercase = false, delay = 0 }) => {
     const valueClass = `${capitalize ? 'capitalize' : ''} ${uppercase ? 'uppercase' : ''}`;
@@ -139,6 +148,14 @@ export default function Show({ auth, certificate, user }) {
         if (modules.every((module) => module.grade === "PASS")) return "PASS";
         return "Pending";
     };
+
+    const getGradePointLabel = (grade) => gradePointLabels[String(grade || '').toUpperCase()] || "N/A";
+
+    const totalModulePoints = allModules.reduce((total, module) => {
+        const point = parseFloat(getGradePointLabel(module.grade));
+
+        return Number.isNaN(point) ? total : total + point;
+    }, 0);
 
     const getGradeColor = (grade) => {
         if (!grade) return "text-gray-500";
@@ -411,26 +428,20 @@ export default function Show({ auth, certificate, user }) {
                                                         value={formatDate(certificate.course_end_date)}
                                                         delay={1.1}
                                                     />
-                                                    <CertificateDetail
-                                                        label="Center"
-                                                        value={certificate.center_name}
-                                                        delay={1.0}
-                                                    />
-
                                                     {/* Academic performance metrics box */}
                                                     <div className="md:col-span-2">
                                                         <h4 className="text-sm font-medium text-blue-700 mb-3">Academic Performance</h4>
                                                         <div className="bg-blue-50 p-4 rounded-lg grid grid-cols-1 sm:grid-cols-2 gap-4">
                                                             <div>
-                                                                <span className="text-sm text-gray-500">Credits Earned</span>
+                                                                <span className="text-sm text-gray-500">Points Earned</span>
                                                                 <div className="text-2xl font-bold text-gray-800">
-                                                                    {certificate.cumulative_credits_earned || "N/A"}
+                                                                    {totalModulePoints ? totalModulePoints.toFixed(2) : "N/A"}
                                                                 </div>
                                                             </div>
                                                             <div>
                                                                 <span className="text-sm text-gray-500">Grading Type</span>
                                                                 <div className="text-2xl font-bold text-gray-800">
-                                                                    {getGradingType(allModules)}
+                                                                    {certificate.grade || "N/A"}
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -467,8 +478,8 @@ export default function Show({ auth, certificate, user }) {
                                                             </div>
                                                             <p className="text-sm text-gray-700">
                                                                 This certificate includes a total of {allModules.length} modules.
-                                                                {allModules.reduce((total, module) => total + (parseInt(module.credits) || 0), 0) > 0 &&
-                                                                    ` Total credits: ${allModules.reduce((total, module) => total + (parseInt(module.credits) || 0), 0)}.`
+                                                                {totalModulePoints > 0 &&
+                                                                    ` Total points: ${totalModulePoints.toFixed(2)}.`
                                                                 }
                                                             </p>
                                                         </div>
@@ -487,7 +498,7 @@ export default function Show({ auth, certificate, user }) {
                                                                             Level
                                                                         </th>
                                                                         <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                                            Credits
+                                                                            Points
                                                                         </th>
                                                                         <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                                                             Grade
@@ -507,7 +518,7 @@ export default function Show({ auth, certificate, user }) {
                                                                                 {formatLevelValue(module.level)}
                                                                             </td>
                                                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                                                {module.credits || "N/A"}
+                                                                                {getGradePointLabel(module.grade)}
                                                                             </td>
                                                                             <td className={`px-6 py-4 whitespace-nowrap text-sm ${getGradeColor(module.grade)}`}>
                                                                                 {module.grade || "N/A"}

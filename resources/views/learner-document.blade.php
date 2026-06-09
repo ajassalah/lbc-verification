@@ -4,7 +4,9 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>{{ $documentLabel }} - {{ $learner->full_name }}</title>
-        <link rel="icon" href="{{ asset('image/ukee logo.png') }}" type="image/png">
+        <link rel="icon" href="{{ asset('image/lbc-logo.png') }}?v=lbc" type="image/png">
+        <link rel="shortcut icon" href="{{ asset('image/lbc-logo.png') }}?v=lbc" type="image/png">
+        <link rel="apple-touch-icon" href="{{ asset('image/lbc-logo.png') }}?v=lbc">
         <style>
             html, body {
                 margin: 0;

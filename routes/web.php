@@ -22,7 +22,9 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/certificates/search', [CertificateController::class, 'search'])->name('certificates.search');
 
 // Added the route show reference number in url 
-Route::get('/certificates/verify/reference_no={reference_no}', [CertificateController::class, 'verify'])->name('certificates.verify');
+Route::get('/certificates/verify/reference_no={reference_no}', [CertificateController::class, 'verify'])
+    ->where('reference_no', '.*')
+    ->name('certificates.verify');
 
 // Certificate PDF generation route
 Route::get('/certificates/{certificate}/pdf', [CertificateController::class, 'generatePDF'])->name('certificates.pdf');

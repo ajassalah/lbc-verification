@@ -1,10 +1,10 @@
-import ErrorNotification from '@/Components/ErrorNotification';
-import ApplicationLogo from '@/Components/ApplicationLogo';
-import InputError from '@/Components/InputError';
-import { Head, Link, useForm, usePage } from '@inertiajs/react';
-import { useEffect, useState } from 'react';
+import ErrorNotification from "@/Components/ErrorNotification";
+import ApplicationLogo from "@/Components/ApplicationLogo";
+import InputError from "@/Components/InputError";
+import { Head, Link, useForm, usePage } from "@inertiajs/react";
+import { useEffect, useState } from "react";
 
-function SearchIcon({ className = 'h-5 w-5' }) {
+function SearchIcon({ className = "h-5 w-5" }) {
     return (
         <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -20,7 +20,7 @@ function SearchIcon({ className = 'h-5 w-5' }) {
     );
 }
 
-function ShieldIcon({ className = 'h-5 w-5' }) {
+function ShieldIcon({ className = "h-5 w-5" }) {
     return (
         <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -35,7 +35,11 @@ function ShieldIcon({ className = 'h-5 w-5' }) {
                 strokeLinecap="round"
                 strokeLinejoin="round"
             />
-            <path d="m9.5 12 1.8 1.8 3.5-4" strokeLinecap="round" strokeLinejoin="round" />
+            <path
+                d="m9.5 12 1.8 1.8 3.5-4"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            />
         </svg>
     );
 }
@@ -45,7 +49,7 @@ export default function Home() {
     const [showErrorNotification, setShowErrorNotification] = useState(false);
 
     const { data, setData, get, processing, errors } = useForm({
-        reference_no: '',
+        reference_no: "",
     });
 
     useEffect(() => {
@@ -53,8 +57,8 @@ export default function Home() {
             .querySelectorAll('[aria-hidden="true"].fixed.inset-0')
             .forEach((element) => element.remove());
 
-        document.body.style.overflow = '';
-        document.documentElement.style.overflow = '';
+        document.body.style.overflow = "";
+        document.documentElement.style.overflow = "";
     }, []);
 
     useEffect(() => {
@@ -73,7 +77,7 @@ export default function Home() {
 
     const submit = (e) => {
         e.preventDefault();
-        get(route('certificates.search'));
+        get(route("certificates.search"));
     };
 
     const currentYear = new Date().getFullYear();
@@ -82,7 +86,7 @@ export default function Home() {
         <>
             {showErrorNotification && <ErrorNotification />}
 
-            <Head title="UKEE Certificate Verification" />
+            <Head title="LBC Certificate Verification" />
 
             <div className="relative min-h-screen overflow-hidden bg-[radial-gradient(circle_at_top,_#f8fbff_0%,_#eef4fb_48%,_#e7eef8_100%)] text-slate-900">
                 <div className="pointer-events-none absolute inset-0">
@@ -98,7 +102,7 @@ export default function Home() {
                             </Link>
 
                             <h1 className="mt-4 text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">
-                                UKEE Certificate Verification
+                                LBC Certificate Verification
                             </h1>
                             <p className="mt-3 text-base text-slate-600 sm:text-lg">
                                 Secure &amp; Reliable Certificate Authentication
@@ -111,17 +115,21 @@ export default function Home() {
                                     Certificate Verification
                                 </h2>
                                 <p className="mx-auto mt-4 max-w-xl text-lg leading-8 text-slate-500">
-                                    Enter the certificate reference number below to verify and
-                                    view the authentic certificate details.
+                                    Enter the learner number or certificate
+                                    reference number below to verify and view the
+                                    authentic certificate details.
                                 </p>
                             </div>
 
-                            <form onSubmit={submit} className="mx-auto mt-8 max-w-2xl sm:mt-10">
+                            <form
+                                onSubmit={submit}
+                                className="mx-auto mt-8 max-w-2xl sm:mt-10"
+                            >
                                 <label
                                     htmlFor="reference_no"
                                     className="block text-sm font-semibold text-slate-700"
                                 >
-                                    Certificate Reference Number
+                                    Learner Number or Certificate Reference Number
                                 </label>
 
                                 <div className="relative mt-3">
@@ -129,8 +137,13 @@ export default function Home() {
                                         id="reference_no"
                                         type="text"
                                         value={data.reference_no}
-                                        onChange={(e) => setData('reference_no', e.target.value)}
-                                        placeholder="Enter reference number"
+                                        onChange={(e) =>
+                                            setData(
+                                                "reference_no",
+                                                e.target.value,
+                                            )
+                                        }
+                                        placeholder="Enter learner number or certificate reference number"
                                         autoFocus
                                         required
                                         className="h-14 w-full rounded-2xl border border-slate-300 bg-white px-4 pr-12 text-base text-slate-900 shadow-sm outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100 sm:h-16 sm:px-5 sm:pr-14 sm:text-lg"
@@ -140,7 +153,10 @@ export default function Home() {
                                     </span>
                                 </div>
 
-                                <InputError message={errors.reference_no} className="mt-3" />
+                                <InputError
+                                    message={errors.reference_no}
+                                    className="mt-3"
+                                />
 
                                 <div className="mt-6 space-y-4">
                                     <button
@@ -149,12 +165,16 @@ export default function Home() {
                                         className="inline-flex h-14 w-full items-center justify-center gap-3 rounded-2xl bg-gradient-to-r from-[#3568f6] to-[#244fd8] px-5 text-xs font-semibold uppercase tracking-[0.18em] text-white shadow-[0_18px_30px_rgba(37,79,216,0.28)] transition hover:from-[#2f60ea] hover:to-[#1f46c6] focus:outline-none focus:ring-4 focus:ring-blue-200 disabled:cursor-not-allowed disabled:opacity-70 sm:px-6 sm:text-sm sm:tracking-[0.2em]"
                                     >
                                         <ShieldIcon />
-                                        {processing ? 'Verifying...' : 'Verify Certificate'}
+                                        {processing
+                                            ? "Verifying..."
+                                            : "Verify Certificate"}
                                     </button>
 
                                     <button
                                         type="button"
-                                        onClick={() => window.location.href = '/'}
+                                        onClick={() =>
+                                            (window.location.href = "/")
+                                        }
                                         className="inline-flex h-14 w-full items-center justify-start gap-3 rounded-2xl border border-slate-300 bg-white px-5 text-xs font-semibold uppercase tracking-[0.18em] text-slate-600 shadow-sm transition hover:border-slate-400 hover:bg-slate-50 focus:outline-none focus:ring-4 focus:ring-slate-200 sm:text-sm sm:tracking-[0.2em]"
                                     >
                                         <svg
@@ -193,8 +213,12 @@ export default function Home() {
                         </section>
 
                         <footer className="mt-6 text-center text-slate-600 sm:mt-8">
-                            <p className="text-lg font-medium">UKEE &copy; {currentYear}</p>
-                            <p className="mt-2 text-base">Secure Certificate Verification System</p>
+                            <p className="text-lg font-medium">
+                                LBC &copy; {currentYear}
+                            </p>
+                            <p className="mt-2 text-base">
+                                Secure Certificate Verification System
+                            </p>
                         </footer>
                     </div>
                 </main>

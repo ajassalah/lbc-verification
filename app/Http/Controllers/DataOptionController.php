@@ -22,6 +22,8 @@ class DataOptionController extends Controller
             'type' => ['required', Rule::in([
                 DataOption::COURSE_FACULTY,
                 DataOption::MODULE_LEVEL,
+                DataOption::MEDIUM_OF_INSTRUCTION,
+                DataOption::MODE_OF_STUDY,
             ])],
             'value' => ['required', 'string', 'max:255'],
         ]);
@@ -45,6 +47,8 @@ class DataOptionController extends Controller
             'type' => ['required', Rule::in([
                 DataOption::COURSE_FACULTY,
                 DataOption::MODULE_LEVEL,
+                DataOption::MEDIUM_OF_INSTRUCTION,
+                DataOption::MODE_OF_STUDY,
             ])],
             'value' => ['required', 'string', 'max:255'],
         ]);

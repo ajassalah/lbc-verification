@@ -584,6 +584,7 @@ export default function Index({ auth, certificates, params = {}, courses = [], s
                                                     <Link
                                                         href={route("certificates.show", certificate.id)}
                                                         className="p-2 bg-green-50 text-green-600 rounded-lg hover:bg-green-100 transition-colors"
+                                                        title="View"
                                                     >
                                                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -591,16 +592,40 @@ export default function Index({ auth, certificates, params = {}, courses = [], s
                                                         </svg>
                                                     </Link>
                                                     {isAdmin && (
-                                                        <a
-                                                            href={`/certificates/${certificate.id}/pdf`}
-                                                            target="_blank"
-                                                            rel="noopener noreferrer"
-                                                            className="p-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors"
-                                                        >
-                                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H3a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                                            </svg>
-                                                        </a>
+                                                        <>
+                                                            <button
+                                                                type="button"
+                                                                disabled
+                                                                className="p-2 bg-gray-50 text-gray-400 rounded-lg cursor-not-allowed opacity-60"
+                                                                title="New Certificate temporarily disabled"
+                                                            >
+                                                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                                </svg>
+                                                            </button>
+                                                            <a
+                                                                href={`/certificates/${certificate.id}/pdf?type=old`}
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                                className="p-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors"
+                                                                title="Old Certificate"
+                                                            >
+                                                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H3a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                                </svg>
+                                                            </a>
+                                                            <a
+                                                                href={`/certificates/${certificate.id}/pdf?type=old&print_copy=1`}
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                                className="p-2 bg-slate-50 text-slate-600 rounded-lg hover:bg-slate-100 transition-colors"
+                                                                title="Print Copy Old Certificate"
+                                                            >
+                                                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h20a2 2 0 012 2v5a2 2 0 01-2 2h-2m-16 0v4h12v-4H6z" />
+                                                                </svg>
+                                                            </a>
+                                                        </>
                                                     )}
                                                     <Link
                                                         href={route("certificates.edit", certificate.id)}
@@ -702,17 +727,40 @@ export default function Index({ auth, certificates, params = {}, courses = [], s
                                                                     View
                                                                 </Dropdown.Link>
                                                                 {isAdmin && (
-                                                                    <a
-                                                                        href={`/certificates/${certificate.id}/pdf`}
-                                                                        target="_blank"
-                                                                        rel="noopener noreferrer"
-                                                                        className="block w-full px-4 py-2 text-start text-sm leading-5 text-blue-600 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 transition duration-150 ease-in-out flex items-center"
-                                                                    >
-                                                                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H3a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                                                        </svg>
-                                                                        PDF
-                                                                    </a>
+                                                                    <>
+                                                                        <button
+                                                                            type="button"
+                                                                            disabled
+                                                                            className="flex w-full cursor-not-allowed items-center px-4 py-2 text-start text-sm leading-5 text-gray-400 opacity-60"
+                                                                        >
+                                                                            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                                            </svg>
+                                                                            New Certificate
+                                                                        </button>
+                                                                        <a
+                                                                            href={`/certificates/${certificate.id}/pdf?type=old`}
+                                                                            target="_blank"
+                                                                            rel="noopener noreferrer"
+                                                                            className="block w-full px-4 py-2 text-start text-sm leading-5 text-blue-600 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 transition duration-150 ease-in-out flex items-center"
+                                                                        >
+                                                                            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H3a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                                            </svg>
+                                                                            Old Certificate
+                                                                        </a>
+                                                                        <a
+                                                                            href={`/certificates/${certificate.id}/pdf?type=old&print_copy=1`}
+                                                                            target="_blank"
+                                                                            rel="noopener noreferrer"
+                                                                            className="block w-full px-4 py-2 text-start text-sm leading-5 text-slate-600 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 transition duration-150 ease-in-out flex items-center"
+                                                                        >
+                                                                            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h20a2 2 0 012 2v5a2 2 0 01-2 2h-2m-16 0v4h12v-4H6z" />
+                                                                            </svg>
+                                                                            Print Copy Old Certificate
+                                                                        </a>
+                                                                    </>
                                                                 )}
                                                                 <Dropdown.Link href={route("certificates.edit", certificate.id)} className="flex items-center text-indigo-600">
                                                                     <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">

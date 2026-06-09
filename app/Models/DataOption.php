@@ -9,6 +9,8 @@ class DataOption extends Model
 {
     public const COURSE_FACULTY = 'course_faculty';
     public const MODULE_LEVEL = 'module_level';
+    public const MEDIUM_OF_INSTRUCTION = 'medium_of_instruction';
+    public const MODE_OF_STUDY = 'mode_of_study';
 
     protected $fillable = [
         'type',
@@ -37,6 +39,8 @@ class DataOption extends Model
         return [
             self::COURSE_FACULTY => self::valuesFor(self::COURSE_FACULTY),
             self::MODULE_LEVEL => self::valuesFor(self::MODULE_LEVEL),
+            self::MEDIUM_OF_INSTRUCTION => self::valuesFor(self::MEDIUM_OF_INSTRUCTION),
+            self::MODE_OF_STUDY => self::valuesFor(self::MODE_OF_STUDY),
         ];
     }
 

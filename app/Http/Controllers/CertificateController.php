@@ -17,6 +17,7 @@ use App\Http\Resources\LearnerResource;
 use App\Models\CertificateViewLog;
 use App\Models\Center;
 use App\Models\Course;
+use App\Models\DataOption;
 use App\Models\Learner;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -25,52 +26,17 @@ use Carbon\Carbon;
 
 class CertificateController extends Controller
 {
-    private const CERTIFICATE_REFERENCE_START = 8985;
-    private const CERTIFICATE_REFERENCE_INCREMENT = 3;
-
-    private function toRoman(int $number): string
+    private function certificateReferenceNo(?Course $course, ?Learner $learner): string
     {
-        $map = [
-            1000 => 'M',
-            900 => 'CM',
-            500 => 'D',
-            400 => 'CD',
-            100 => 'C',
-            90 => 'XC',
-            50 => 'L',
-            40 => 'XL',
-            10 => 'X',
-            9 => 'IX',
-            5 => 'V',
-            4 => 'IV',
-            1 => 'I',
-        ];
+        $courseCode = $course?->code ?: 'COURSE';
+        $learnerNumber = $learner?->learner_id ?: 'LEARNER';
 
-        $roman = '';
-
-        foreach ($map as $value => $symbol) {
-            while ($number >= $value) {
-                $roman .= $symbol;
-                $number -= $value;
-            }
-        }
-
-        return $roman;
-    }
-
-    private function nextReferenceNo(): string
-    {
-        $maxReferenceNumber = Certificate::query()
-            ->pluck('reference_no')
-            ->map(fn ($referenceNo) => preg_match('/-(\d+)$/', (string) $referenceNo, $matches) ? (int) $matches[1] : null)
-            ->filter()
-            ->max();
-
-        $nextNumber = (! $maxReferenceNumber || $maxReferenceNumber < self::CERTIFICATE_REFERENCE_START)
-            ? self::CERTIFICATE_REFERENCE_START
-            : $maxReferenceNumber + self::CERTIFICATE_REFERENCE_INCREMENT;
-
-        return 'UQAN-' . $this->toRoman((int) now()->format('Y')) . '-' . $nextNumber;
+        return sprintf(
+            'LBC/DIP/%s/%s/%s',
+            $courseCode,
+            now()->format('Y'),
+            $learnerNumber
+        );
     }
 
     /**
@@ -143,15 +109,15 @@ class CertificateController extends Controller
      */
     public function create()
     {
-        $courses = \App\Models\Course::where('status', true)->get(['id', 'name', 'code', 'total_credits']);
-        $learners = \App\Models\Learner::get(['id', 'full_name', 'learner_id']);
-        $centers = Center::orderBy('name')->get(['id', 'name', 'number']);
+        $courses = \App\Models\Course::where('status', true)->get(['id', 'name', 'code', 'duration', 'total_credits']);
+        $learners = \App\Models\Learner::get(['id', 'full_name', 'date_of_birth', 'nationality', 'learner_id']);
 
         return Inertia::render('Certificates/Create', [
             'courses' => $courses,
             'learners' => $learners,
-            'centers' => $centers,
-            'nextReferenceNo' => $this->nextReferenceNo(),
+            'mediumOfInstructionOptions' => DataOption::valuesFor(DataOption::MEDIUM_OF_INSTRUCTION),
+            'modeOfStudyOptions' => DataOption::valuesFor(DataOption::MODE_OF_STUDY),
+            'referenceYear' => now()->format('Y'),
         ]);
     }
 
@@ -162,9 +128,10 @@ class CertificateController extends Controller
     {
         $validated = $request->validated();
 
-        if (! $request->user()?->allow_manual_certificate_reference) {
-            $validated['reference_no'] = $this->nextReferenceNo();
-        }
+        $validated['reference_no'] = $this->certificateReferenceNo(
+            Course::find($validated['course_id']),
+            Learner::find($validated['learner_id'])
+        );
 
         Certificate::create($validated);
 
@@ -210,13 +177,12 @@ class CertificateController extends Controller
 
         // Get all learners for the dropdown
         $learners = Learner::all();
-        $centers = Center::orderBy('name')->get(['id', 'name', 'number']);
-
         return Inertia::render('Certificates/Edit', [
             'certificate' => CertificateResource::make($certificate),
             'courses' => CourseResource::collection($courses),
             'learners' => LearnerResource::collection($learners),
-            'centers' => $centers,
+            'mediumOfInstructionOptions' => DataOption::valuesFor(DataOption::MEDIUM_OF_INSTRUCTION),
+            'modeOfStudyOptions' => DataOption::valuesFor(DataOption::MODE_OF_STUDY),
         ]);
     }
 
@@ -263,7 +229,7 @@ class CertificateController extends Controller
     }
 
     /**
-     * Search for a reference_no certificate by reference number.
+     * Search for a certificate by learner number or certificate reference.
      */
     public function search(Request $request)
     {
@@ -271,17 +237,23 @@ class CertificateController extends Controller
             'reference_no' => 'required|string',
         ]);
 
-        // Search in both tables to check if certificate exists
-        $oldCertificate = \App\Models\OldCertificate::where('reference_no', $request->reference_no)->first();
-        $certificate = Certificate::where('reference_no', $request->reference_no)->first();
+        $lookup = trim((string) $request->reference_no);
+
+        $oldCertificate = \App\Models\OldCertificate::query()
+            ->where('reference_no', $lookup)
+            ->orWhere('student_id', $lookup)
+            ->first();
+
+        $certificate = Certificate::with('learner')
+            ->where('reference_no', $lookup)
+            ->orWhereHas('learner', fn ($query) => $query->where('learner_id', $lookup))
+            ->first();
 
         if ($oldCertificate || $certificate) {
-            // Redirect to the verify route with reference_no only
-            return redirect()->route('certificates.verify', ['reference_no' => $request->reference_no]);
+            return redirect()->route('certificates.verify', ['reference_no' => $lookup]);
         } else {
-            // Certificate not found in either table
             return redirect()->route('certificates.verify', [
-                'reference_no' => $request->reference_no,
+                'reference_no' => $lookup,
                 'not_found' => true
             ]);
         }
@@ -308,12 +280,16 @@ class CertificateController extends Controller
         $certificateType = null;
 
         // Search in both tables (old certificates first, then new certificates)
-        $certificate = \App\Models\OldCertificate::where('reference_no', $reference_no)->first();
+        $certificate = \App\Models\OldCertificate::query()
+            ->where('reference_no', $reference_no)
+            ->orWhere('student_id', $reference_no)
+            ->first();
         if ($certificate) {
             $certificateType = 'old';
         } else {
             $certificate = Certificate::with(['course', 'learner'])
                 ->where('reference_no', $reference_no)
+                ->orWhereHas('learner', fn ($query) => $query->where('learner_id', $reference_no))
                 ->first();
             if ($certificate) {
                 $certificateType = 'new';
@@ -421,6 +397,8 @@ class CertificateController extends Controller
             abort(403);
         }
 
+        $type = request()->query('type', 'new');
+
         if (! request()->boolean('raw')) {
             $certificate->load(['learner']);
 
@@ -429,6 +407,8 @@ class CertificateController extends Controller
                 'documentUrl' => route('certificates.pdf', [
                     'certificate' => $certificate,
                     'raw' => 1,
+                    'type' => $type,
+                    'print_copy' => request()->boolean('print_copy') ? 1 : null,
                 ]),
             ]);
         }
@@ -455,13 +435,15 @@ class CertificateController extends Controller
             'courseDuration' => $courseDuration,
             'createdBy' => $certificate->createdBy ? $certificate->createdBy->name : 'Unknown',
             'centerNumber' => $centerNumber,
+            'printCopyOld' => $type === 'old' && request()->boolean('print_copy'),
         ];
 
 
-        $pdf = Pdf::loadView('certificate', $data);
-        $pdf->setPaper('A4', 'portrait');
+        $isOldPdf = $type === 'old';
+        $pdf = Pdf::loadView($isOldPdf ? 'certificate-old' : 'certificate', $data);
+        $pdf->setPaper($isOldPdf ? [0, 0, 540, 780] : 'A4', 'portrait');
         $pdf->setOption('enable-javascript', true);
-        $pdf->setOption('isRemoteEnabled', true);
+        $pdf->setOption('isRemoteEnabled', false);
         $pdf->setOption('images', true);
         $pdf->setOption('enable-smart-shrinking', true);
         $pdf->setOption('margin-top', 0);
@@ -472,7 +454,8 @@ class CertificateController extends Controller
         $pdf->setOption('no-background', false);
         $pdf->setOption('disable-smart-shrinking', false);
 
-        $filename = 'Certificate_' . $certificate->reference_no . '.pdf';
+        $safeReferenceNo = preg_replace('/[\/\\\\]+/', '-', (string) $certificate->reference_no);
+        $filename = 'Certificate_' . $safeReferenceNo . '.pdf';
 
         return $pdf->stream($filename);
     }

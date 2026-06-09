@@ -21,8 +21,6 @@ class StoreCertificateRequest extends FormRequest
      */
     public function rules(): array
     {
-        $allowManualCertificateReference = (bool) $this->user()?->allow_manual_certificate_reference;
-
         return [
             'learner_id' => 'required|exists:learners,id',
             'course_id' => 'required|exists:courses,id',
@@ -30,17 +28,18 @@ class StoreCertificateRequest extends FormRequest
             'country' => 'nullable|string|max:255',
             'cumulative_credits_earned' => 'nullable|integer',
             'cumulative_grade_point_average' => 'nullable|numeric|between:0.00,99.99',
-            'reference_no' => $allowManualCertificateReference
-                ? ['required', 'string', 'max:255', 'unique:certificates,reference_no']
-                : ['nullable', 'string', 'max:255'],
+            'reference_no' => ['nullable', 'string', 'max:255'],
             'course_start_date' => 'nullable|date',
             'course_end_date' => 'nullable|date|after:course_start_date',
             'awarding_date' => 'required|date',
             'date_of_exam' => 'nullable|date',
+            'completion_letter_date' => 'nullable|date',
+            'medium_of_instruction' => 'nullable|string|max:255',
+            'mode_of_study' => 'nullable|string|max:255',
             'specialization' => 'nullable|string|max:255',
             'center_name' => 'nullable|string|max:255',
             'status' => 'required|string|in:Pending,Verified',
-            'grade' => 'nullable|string|in:Pass,Merit,Distinction',
+            'grade' => 'nullable|string|in:Pass,Merit,Destination',
             'created_by' => 'required|exists:users,id',
             'modules_data' => 'required|json',
         ];

@@ -5,7 +5,6 @@ import { Link, usePage } from '@inertiajs/react';
 import Notification from '@/Components/Notification';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-    BuildingOffice2Icon,
     Squares2X2Icon, 
     BookOpenIcon, 
     UsersIcon, 
@@ -26,10 +25,9 @@ export default function Authenticated({ user, header, children }) {
 
     const navigation = [
         { name: 'Dashboard', href: route('dashboard'), icon: Squares2X2Icon, active: route().current('dashboard') },
-        { name: 'Courses', href: route('courses.index'), icon: BookOpenIcon, active: route().current('courses.*') },
         { name: 'Learners', href: route('learners.index'), icon: UsersIcon, active: route().current('learners.*') },
+        { name: 'Courses', href: route('courses.index'), icon: BookOpenIcon, active: route().current('courses.*') },
         { name: 'Certificates', href: route('certificates.index'), icon: AcademicCapIcon, active: route().current('certificates.*') },
-        { name: 'Centers', href: route('centers.index'), icon: BuildingOffice2Icon, active: route().current('centers.*') },
         { name: 'Data', href: route('data.index'), icon: CircleStackIcon, active: route().current('data.*') || route().current('data-options.*') },
         ...(isAdmin ? [
             { name: 'Users', href: route('users.index'), icon: UserGroupIcon, active: route().current('users.*') },
@@ -42,8 +40,8 @@ export default function Authenticated({ user, header, children }) {
             {/* Sidebar for Desktop */}
             <aside className="hidden lg:flex lg:flex-col w-64 bg-white border-r border-blue-200 shadow-sm fixed h-full z-30">
                 <div className="flex items-center justify-center h-20 border-b border-blue-100 px-6">
-                    <Link href="/">
-                        <Logo className="h-20 w-auto" />
+                    <Link href="/" className="inline-flex h-16 w-[154px] shrink-0 items-center justify-center overflow-hidden bg-black px-2 py-1">
+                        <Logo className="h-14 w-auto max-w-full shrink-0" />
                     </Link>
                 </div>
                 
@@ -96,7 +94,9 @@ export default function Authenticated({ user, header, children }) {
                             className="fixed inset-y-0 left-0 w-72 bg-white z-50 lg:hidden shadow-2xl flex flex-col"
                         >
                             <div className="flex items-center justify-between h-20 px-6 border-b border-blue-100">
-                                <Logo className="h-14 w-auto" />
+                                <div className="inline-flex h-12 w-[118px] shrink-0 items-center justify-center overflow-hidden bg-black px-2 py-1">
+                                    <Logo className="h-10 w-auto max-w-full shrink-0" />
+                                </div>
                                 <button onClick={() => setShowingSidebar(false)} className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg">
                                     <XMarkIcon className="h-6 w-6" />
                                 </button>
