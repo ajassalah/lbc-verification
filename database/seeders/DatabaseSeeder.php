@@ -28,11 +28,16 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
-        // Run Certificate seeder
         $this->call([
-            LearnerSeeder::class,
             CourseSeeder::class,
-            CertificateSeeder::class,
         ]);
+
+        // Demo data depends on fakerphp/faker, which is not installed in production.
+        if (app()->environment(['local', 'testing']) && class_exists(\Faker\Factory::class)) {
+            $this->call([
+                LearnerSeeder::class,
+                CertificateSeeder::class,
+            ]);
+        }
     }
 }
