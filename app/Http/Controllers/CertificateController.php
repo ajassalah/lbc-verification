@@ -26,6 +26,15 @@ use Carbon\Carbon;
 
 class CertificateController extends Controller
 {
+    private function pdfNoStoreHeaders(): array
+    {
+        return [
+            'Cache-Control' => 'no-store, no-cache, must-revalidate, max-age=0',
+            'Pragma' => 'no-cache',
+            'Expires' => '0',
+        ];
+    }
+
     private function certificateReferenceNo(?Course $course, ?Learner $learner): string
     {
         $courseCode = $course?->code ?: 'COURSE';
@@ -402,15 +411,16 @@ class CertificateController extends Controller
         if (! request()->boolean('raw')) {
             $certificate->load(['learner']);
 
-            return view('certificate-document', [
+            return response()->view('certificate-document', [
                 'certificate' => $certificate,
                 'documentUrl' => route('certificates.pdf', [
                     'certificate' => $certificate,
                     'raw' => 1,
                     'type' => $type,
                     'print_copy' => request()->boolean('print_copy') ? 1 : null,
+                    'v' => $certificate->updated_at?->timestamp ?? time(),
                 ]),
-            ]);
+            ], 200, $this->pdfNoStoreHeaders());
         }
 
         // Load relationships
@@ -457,6 +467,9 @@ class CertificateController extends Controller
         $safeReferenceNo = preg_replace('/[\/\\\\]+/', '-', (string) $certificate->reference_no);
         $filename = 'Certificate_' . $safeReferenceNo . '.pdf';
 
-        return $pdf->stream($filename);
+        $response = $pdf->stream($filename);
+        $response->headers->add($this->pdfNoStoreHeaders());
+
+        return $response;
     }
 }

@@ -23,7 +23,7 @@ return new class extends Migration
             $table->date('date_of_birth');
             $table->string('profile_picture')->nullable();
             $table->string('gender');
-            $table->string('email')->unique();
+            $table->string('email');
             $table->string('learner_id')->unique();
             $table->string('proof_type');
             $table->string('proof_id');

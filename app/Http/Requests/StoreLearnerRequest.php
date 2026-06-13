@@ -30,7 +30,7 @@ class StoreLearnerRequest extends FormRequest
             'date_of_birth' => 'required|date|before:today',
             'profile_picture' => 'nullable|image|mimes:jpg,png,jpeg|max:2048',
             'gender' => 'required|string|in:Male,Female,Other',
-            'email' => 'required|email|unique:learners,email',
+            'email' => 'required|email',
             'learner_id' => $allowManualLearnerId
                 ? ['required', 'string', 'max:50', 'unique:learners,learner_id']
                 : ['nullable', 'string', 'max:50'],

@@ -222,6 +222,19 @@ export default function Index({ auth, certificates, params = {}, courses = [], s
         }
     };
 
+    const certificatePdfUrl = (certificate, printCopy = false) => {
+        const params = new URLSearchParams({
+            type: 'old',
+            v: certificate.pdf_version || certificate.updated_at || Date.now(),
+        });
+
+        if (printCopy) {
+            params.set('print_copy', '1');
+        }
+
+        return `/certificates/${certificate.id}/pdf?${params.toString()}`;
+    };
+
     return (
         <AuthenticatedLayout
             user={auth.user}
@@ -604,7 +617,7 @@ export default function Index({ auth, certificates, params = {}, courses = [], s
                                                                 </svg>
                                                             </button>
                                                             <a
-                                                                href={`/certificates/${certificate.id}/pdf?type=old`}
+                                                                href={certificatePdfUrl(certificate)}
                                                                 target="_blank"
                                                                 rel="noopener noreferrer"
                                                                 className="p-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors"
@@ -615,7 +628,7 @@ export default function Index({ auth, certificates, params = {}, courses = [], s
                                                                 </svg>
                                                             </a>
                                                             <a
-                                                                href={`/certificates/${certificate.id}/pdf?type=old&print_copy=1`}
+                                                                href={certificatePdfUrl(certificate, true)}
                                                                 target="_blank"
                                                                 rel="noopener noreferrer"
                                                                 className="p-2 bg-slate-50 text-slate-600 rounded-lg hover:bg-slate-100 transition-colors"
@@ -739,7 +752,7 @@ export default function Index({ auth, certificates, params = {}, courses = [], s
                                                                             New Certificate
                                                                         </button>
                                                                         <a
-                                                                            href={`/certificates/${certificate.id}/pdf?type=old`}
+                                                                            href={certificatePdfUrl(certificate)}
                                                                             target="_blank"
                                                                             rel="noopener noreferrer"
                                                                             className="block w-full px-4 py-2 text-start text-sm leading-5 text-blue-600 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 transition duration-150 ease-in-out flex items-center"
@@ -750,7 +763,7 @@ export default function Index({ auth, certificates, params = {}, courses = [], s
                                                                             Old Certificate
                                                                         </a>
                                                                         <a
-                                                                            href={`/certificates/${certificate.id}/pdf?type=old&print_copy=1`}
+                                                                            href={certificatePdfUrl(certificate, true)}
                                                                             target="_blank"
                                                                             rel="noopener noreferrer"
                                                                             className="block w-full px-4 py-2 text-start text-sm leading-5 text-slate-600 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 transition duration-150 ease-in-out flex items-center"

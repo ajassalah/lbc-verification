@@ -29,7 +29,7 @@ class UpdateLearnerRequest extends FormRequest
             'date_of_birth' => 'required|date|before:today',
             'profile_picture' => 'nullable|image|mimes:jpg,png,jpeg|max:2048',
             'gender' => 'required|string|in:Male,Female,Other',
-            'email' => ['required', 'email', Rule::unique('learners')->ignore($this->learner)],
+            'email' => ['required', 'email'],
             'learner_id' => ['required', 'string', 'max:50', Rule::unique('learners')->ignore($this->learner)],
             'proof_type' => 'required|string|in:Passport,National ID,Driving Licence,Driving License,Other',
             'proof_id' => 'required|string|max:50',

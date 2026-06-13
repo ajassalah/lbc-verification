@@ -39,8 +39,9 @@ class CertificateResource extends JsonResource
             'cumulative_credits_earned' => $this->cumulative_credits_earned,
             'cumulative_grade_point_average' => $this->cumulative_grade_point_average,
             'modules_data' => $this->modules_data,
-            'created_at' => Carbon::parse($this->created_at)->format('Y-m-d'),
-            'updated_at' => Carbon::parse($this->updated_at)->format('Y-m-d'),
+            'created_at' => Carbon::parse($this->created_at)->format('Y-m-d H:i:s'),
+            'updated_at' => Carbon::parse($this->updated_at)->format('Y-m-d H:i:s'),
+            'pdf_version' => $this->updated_at ? $this->updated_at->timestamp : time(),
         ];
     }
 }

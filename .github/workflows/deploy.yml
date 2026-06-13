@@ -1,4 +1,4 @@
-name: 🚀 Deploy LBC verification 
+name: 🚀 Deploy LBC verification
 
 on:
   push:

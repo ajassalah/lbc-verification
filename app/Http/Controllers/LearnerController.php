@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Storage;
 
 class LearnerController extends Controller
 {
-    private const LEARNER_ID_START = 35051;
+    private const LEARNER_ID_START = 35057;
     private const LEARNER_ID_INCREMENT = 3;
 
     private function nextLearnerId(): string

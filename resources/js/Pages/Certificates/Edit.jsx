@@ -61,7 +61,7 @@ export default function Edit({
     const [years, setYears] = useState([]);
     const [loading, setLoading] = useState(false);
 
-    const { data, setData, put, processing, errors } = useForm({
+    const { data, setData, put, processing, errors, transform } = useForm({
         learner_id: certificate ? certificate.learner_id : '',
         course_id: certificate ? certificate.course_id : '',
         reference_no: certificate ? certificate.reference_no : '',
@@ -250,11 +250,19 @@ export default function Edit({
             calculateYearStats(modulesData, index);
         });
 
-        // Recalculate cumulative stats based on the updated year stats
-        calculateCumulativeStats(modulesData);
+        const allModules = modulesData.years.flatMap((year) => year.modules || []);
+        const totalCredits = allModules.reduce(
+            (total, module) => total + (parseInt(module.credits, 10) || 0),
+            0
+        );
+        const gradingType = getGradingType(allModules);
 
-        // Update modules data in form state
-        setData('modules_data', JSON.stringify(modulesData));
+        transform((currentData) => ({
+            ...currentData,
+            modules_data: JSON.stringify(modulesData),
+            cumulative_credits_earned: totalCredits,
+            cumulative_grade_point_average: gradingType === 'Completed' ? 1 : 0,
+        }));
 
         // Submit the form
         put(route('certificates.update', certificate.id), {
