@@ -101,7 +101,7 @@ class UserController extends Controller
             'password' => Hash::make($validated['password']),
             'role' => $validated['role'],
             'allow_manual_learner_id' => $validated['allow_manual_learner_id'],
-            'allow_manual_certificate_reference' => false,
+            'allow_manual_certificate_reference' => $validated['allow_manual_learner_id'],
         ]);
 
         return redirect()->route('users.index')
@@ -158,6 +158,8 @@ class UserController extends Controller
         } else {
             unset($validated['password']);
         }
+
+        $validated['allow_manual_certificate_reference'] = $validated['allow_manual_learner_id'];
 
         unset($validated['password_confirmation']);
 

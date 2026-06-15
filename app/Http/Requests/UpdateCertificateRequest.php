@@ -21,6 +21,8 @@ class UpdateCertificateRequest extends FormRequest
      */
     public function rules(): array
     {
+        $allowManualReference = (bool) $this->user()?->allow_manual_learner_id;
+
         return [
             'learner_id' => 'required|exists:learners,id',
             'course_id' => 'required|exists:courses,id',
@@ -28,7 +30,9 @@ class UpdateCertificateRequest extends FormRequest
             'country' => 'nullable|string|max:255',
             'cumulative_credits_earned' => 'nullable|integer',
             'cumulative_grade_point_average' => 'nullable|numeric|between:0.00,99.99',
-            'reference_no' => 'required|string|max:255|unique:certificates,reference_no,' . $this->certificate->id,
+            'reference_no' => $allowManualReference
+                ? 'required|string|max:255|unique:certificates,reference_no,' . $this->certificate->id
+                : 'nullable|string|max:255',
             'course_start_date' => 'nullable|date',
             'course_end_date' => 'nullable|date|after:course_start_date',
             'awarding_date' => 'required|date',

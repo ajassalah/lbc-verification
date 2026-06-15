@@ -232,7 +232,7 @@ export default function Index({ auth }) {
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <ToggleField
                                             id="allow_manual_learner_id"
-                                            label="Student ID auto Generation"
+                                            label="Student ID & Certificate Ref auto Generation"
                                             checked={data.allow_manual_learner_id}
                                             onChange={(checked) => setData('allow_manual_learner_id', checked)}
                                         />

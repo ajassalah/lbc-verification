@@ -12,8 +12,8 @@ use Illuminate\Support\Facades\Storage;
 
 class LearnerController extends Controller
 {
-    private const LEARNER_ID_START = 35057;
-    private const LEARNER_ID_INCREMENT = 3;
+    private const LEARNER_ID_START = 35070;
+    private const LEARNER_ID_INCREMENT = 2;
 
     private function nextLearnerId(): string
     {
@@ -296,6 +296,10 @@ class LearnerController extends Controller
 
         try {
             $validated = $request->validated();
+
+            if (! $request->user()?->allow_manual_learner_id) {
+                $validated['learner_id'] = $learner->learner_id;
+            }
 
             // Handle profile picture upload if present
             if ($request->hasFile('profile_picture')) {

@@ -22,6 +22,8 @@ class UpdateLearnerRequest extends FormRequest
      */
     public function rules(): array
     {
+        $allowManualLearnerId = (bool) $this->user()?->allow_manual_learner_id;
+
         return [
             'prefix' => 'nullable|string|max:10',
             'full_name' => 'required|string|max:255',
@@ -30,7 +32,9 @@ class UpdateLearnerRequest extends FormRequest
             'profile_picture' => 'nullable|image|mimes:jpg,png,jpeg|max:2048',
             'gender' => 'required|string|in:Male,Female,Other',
             'email' => ['required', 'email'],
-            'learner_id' => ['required', 'string', 'max:50', Rule::unique('learners')->ignore($this->learner)],
+            'learner_id' => $allowManualLearnerId
+                ? ['required', 'string', 'max:50', Rule::unique('learners')->ignore($this->learner)]
+                : ['nullable', 'string', 'max:50'],
             'proof_type' => 'required|string|in:Passport,National ID,Driving Licence,Driving License,Other',
             'proof_id' => 'required|string|max:50',
             'id_proof_document' => 'nullable|file|mimes:pdf,png,jpg,jpeg|max:20480',

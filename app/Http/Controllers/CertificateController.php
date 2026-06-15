@@ -43,7 +43,7 @@ class CertificateController extends Controller
         return sprintf(
             'LBC/DIP/%s/%s/%s',
             $courseCode,
-            now()->format('Y'),
+            now()->format('y'),
             $learnerNumber
         );
     }
@@ -118,6 +118,11 @@ class CertificateController extends Controller
      */
     public function create()
     {
+        if (Auth::user()?->role !== 'admin') {
+            return redirect()->route('certificates.index')
+                ->with('error', 'You are not authorized to create certificates.');
+        }
+
         $courses = \App\Models\Course::where('status', true)->get(['id', 'name', 'code', 'duration', 'total_credits']);
         $learners = \App\Models\Learner::get(['id', 'full_name', 'date_of_birth', 'nationality', 'learner_id']);
 
@@ -126,7 +131,7 @@ class CertificateController extends Controller
             'learners' => $learners,
             'mediumOfInstructionOptions' => DataOption::valuesFor(DataOption::MEDIUM_OF_INSTRUCTION),
             'modeOfStudyOptions' => DataOption::valuesFor(DataOption::MODE_OF_STUDY),
-            'referenceYear' => now()->format('Y'),
+            'referenceYear' => now()->format('y'),
         ]);
     }
 
@@ -135,12 +140,19 @@ class CertificateController extends Controller
      */
     public function store(StoreCertificateRequest $request)
     {
+        if ($request->user()?->role !== 'admin') {
+            return redirect()->route('certificates.index')
+                ->with('error', 'You are not authorized to create certificates.');
+        }
+
         $validated = $request->validated();
 
-        $validated['reference_no'] = $this->certificateReferenceNo(
-            Course::find($validated['course_id']),
-            Learner::find($validated['learner_id'])
-        );
+        if (! $request->user()?->allow_manual_learner_id) {
+            $validated['reference_no'] = $this->certificateReferenceNo(
+                Course::find($validated['course_id']),
+                Learner::find($validated['learner_id'])
+            );
+        }
 
         Certificate::create($validated);
 
@@ -202,6 +214,10 @@ class CertificateController extends Controller
     {
         // Get validated data
         $validatedData = $request->validated();
+
+        if (! $request->user()?->allow_manual_learner_id) {
+            $validatedData['reference_no'] = $certificate->reference_no;
+        }
 
         // Parse the modules_data to ensure it's valid JSON before saving
         if (isset($validatedData['modules_data'])) {

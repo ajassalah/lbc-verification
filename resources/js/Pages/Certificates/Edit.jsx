@@ -53,6 +53,7 @@ export default function Edit({
     modeOfStudyOptions = [],
 }) {
 
+    const allowManualReference = Boolean(auth.user?.allow_manual_learner_id);
     const courseOptions = Array.isArray(courses) ? courses : (courses?.data || []);
     const learnerOptions = Array.isArray(learners) ? learners : (learners?.data || []);
     const initialCourse = courseOptions.find(c => c.id === certificate.course_id) || null;
@@ -452,7 +453,8 @@ export default function Edit({
                                         name="reference_no"
                                         value={data.reference_no}
                                         onChange={(e) => setData('reference_no', e.target.value)}
-                                        className="mt-1 block w-full"
+                                        readOnly={!allowManualReference}
+                                        className={`mt-1 block w-full ${allowManualReference ? '' : 'bg-gray-100'}`}
                                         required
                                     />
                                     <InputError message={errors.reference_no} className="mt-2" />

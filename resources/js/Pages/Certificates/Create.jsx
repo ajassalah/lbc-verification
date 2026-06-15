@@ -24,8 +24,9 @@ export default function Create({
     learners,
     mediumOfInstructionOptions = [],
     modeOfStudyOptions = [],
-    referenceYear = new Date().getFullYear()
+    referenceYear = String(new Date().getFullYear()).slice(-2)
 }) {
+    const allowManualReference = Boolean(auth.user?.allow_manual_learner_id);
     const courseOptions = Array.isArray(courses) ? courses : (courses?.data || []);
     const learnerOptions = Array.isArray(learners) ? learners : (learners?.data || []);
     const [selectedCourse, setSelectedCourse] = useState(null);
@@ -62,7 +63,7 @@ export default function Create({
             return '';
         }
 
-        return `LBC/DIP/${courseCode}/${referenceYear}/${learnerNumber}`;
+        return `LBC/DIP/${courseCode}/${String(referenceYear).slice(-2)}/${learnerNumber}`;
     };
 
     useEffect(() => {
@@ -70,7 +71,7 @@ export default function Create({
         const learner = learnerOptions.find((learner) => learner.id === parseInt(data.learner_id));
 
         setData('reference_no', buildCertificateReference(course?.code, learner?.learner_id));
-    }, [data.course_id, data.learner_id]);
+    }, [data.course_id, data.learner_id, allowManualReference, referenceYear]);
 
     // Update modules data when selected course changes
     useEffect(() => {
@@ -383,8 +384,9 @@ export default function Create({
                                         id="reference_no"
                                         name="reference_no"
                                         value={data.reference_no}
-                                        readOnly
-                                        className="mt-1 block w-full bg-gray-100"
+                                        onChange={(e) => setData('reference_no', e.target.value)}
+                                        readOnly={!allowManualReference}
+                                        className={`mt-1 block w-full ${allowManualReference ? '' : 'bg-gray-100'}`}
                                         required
                                     />
                                     <InputError message={errors.reference_no} className="mt-2" />

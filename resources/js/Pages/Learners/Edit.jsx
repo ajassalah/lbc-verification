@@ -14,6 +14,7 @@ import SearchableSelect from '@/Components/SearchableSelect';
 export default function Edit({ auth, learner, genderOptions, proofTypeOptions, countryOptions, nationalityOptions = [], nationalityDialCodes = {} }) {
     // Initialize preview URL based on whether a profile picture exists
     // Use the same logic as Show.jsx for consistency
+    const allowManualLearnerId = Boolean(auth.user?.allow_manual_learner_id);
     const initialUrl = learner.profile_picture ? learner.profile_picture : null;
     const [previewUrl, setPreviewUrl] = useState(initialUrl);
     const { data, setData, post, processing, errors } = useForm({
@@ -216,9 +217,10 @@ export default function Edit({ auth, learner, genderOptions, proofTypeOptions, c
                                                 <TextInput
                                                     id="learner_id"
                                                     type="text"
-                                                    className="mt-1 block w-full"
+                                                    className={`mt-1 block w-full ${allowManualLearnerId ? '' : 'bg-gray-100'}`}
                                                     value={data.learner_id}
                                                     onChange={(e) => handleChange('learner_id', e.target.value)}
+                                                    readOnly={!allowManualLearnerId}
                                                     required
                                                 />
                                                 <InputError message={errors.learner_id} className="mt-2" />

@@ -444,19 +444,21 @@ export default function Index({ auth, certificates, params = {}, courses = [], s
                                     )}
                                 </div>
 
-                                <div className="flex items-center">
-                                    <Link
-                                        className="group relative inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md overflow-hidden font-medium text-sm text-white shadow-sm transition-all duration-300 ease-in-out hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                                        href={route('certificates.create')}
-                                    >
-                                        <span className="absolute top-0 left-0 w-full h-0 bg-white/20 transition-all duration-300 ease-out group-hover:h-full"></span>
-                                        <span className="absolute right-0 -mt-12 -mr-12 w-12 h-12 bg-white/10 rounded-full transform rotate-45 transition-all duration-700 ease-in-out group-hover:scale-150 group-hover:mt-1 group-hover:mr-3"></span>
-                                        <svg className="w-4 h-4 mr-2 transition-transform duration-300 transform group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                                        </svg>
-                                        <span className="relative">Add Certificate</span>
-                                    </Link>
-                                </div>
+                                {isAdmin && (
+                                    <div className="flex items-center">
+                                        <Link
+                                            className="group relative inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md overflow-hidden font-medium text-sm text-white shadow-sm transition-all duration-300 ease-in-out hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                                            href={route('certificates.create')}
+                                        >
+                                            <span className="absolute top-0 left-0 w-full h-0 bg-white/20 transition-all duration-300 ease-out group-hover:h-full"></span>
+                                            <span className="absolute right-0 -mt-12 -mr-12 w-12 h-12 bg-white/10 rounded-full transform rotate-45 transition-all duration-700 ease-in-out group-hover:scale-150 group-hover:mt-1 group-hover:mr-3"></span>
+                                            <svg className="w-4 h-4 mr-2 transition-transform duration-300 transform group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                                            </svg>
+                                            <span className="relative">Add Certificate</span>
+                                        </Link>
+                                    </div>
+                                )}
                             </div>
 
                             <AnimatePresence>
