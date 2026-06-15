@@ -21,7 +21,7 @@ class UpdateCertificateRequest extends FormRequest
      */
     public function rules(): array
     {
-        $allowManualReference = (bool) $this->user()?->allow_manual_learner_id;
+        $allowManualReference = (bool) $this->user()?->allow_manual_certificate_reference;
 
         return [
             'learner_id' => 'required|exists:learners,id',

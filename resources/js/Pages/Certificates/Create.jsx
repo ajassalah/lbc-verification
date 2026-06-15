@@ -26,7 +26,7 @@ export default function Create({
     modeOfStudyOptions = [],
     referenceYear = String(new Date().getFullYear()).slice(-2)
 }) {
-    const allowManualReference = Boolean(auth.user?.allow_manual_learner_id);
+    const allowManualReference = Boolean(auth.user?.allow_manual_certificate_reference);
     const courseOptions = Array.isArray(courses) ? courses : (courses?.data || []);
     const learnerOptions = Array.isArray(learners) ? learners : (learners?.data || []);
     const [selectedCourse, setSelectedCourse] = useState(null);

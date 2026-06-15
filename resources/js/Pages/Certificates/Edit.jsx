@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import TextInput from '@/Components/TextInput';
@@ -51,9 +51,10 @@ export default function Edit({
     learners,
     mediumOfInstructionOptions = [],
     modeOfStudyOptions = [],
+    referenceYear = String(new Date().getFullYear()).slice(-2),
 }) {
 
-    const allowManualReference = Boolean(auth.user?.allow_manual_learner_id);
+    const allowManualReference = Boolean(auth.user?.allow_manual_certificate_reference);
     const courseOptions = Array.isArray(courses) ? courses : (courses?.data || []);
     const learnerOptions = Array.isArray(learners) ? learners : (learners?.data || []);
     const initialCourse = courseOptions.find(c => c.id === certificate.course_id) || null;
@@ -61,6 +62,7 @@ export default function Edit({
     const [modulesByYear, setModulesByYear] = useState({});
     const [years, setYears] = useState([]);
     const [loading, setLoading] = useState(false);
+    const didMountReference = useRef(false);
 
     const { data, setData, put, processing, errors, transform } = useForm({
         learner_id: certificate ? certificate.learner_id : '',
@@ -80,6 +82,26 @@ export default function Edit({
         cumulative_grade_point_average: certificate ? parseFloat(certificate.cumulative_grade_point_average || 0) : 0,
         modules_data: JSON.stringify(normalizeModulesData(certificate?.modules_data))
     });
+
+    const buildCertificateReference = (courseCode, learnerNumber) => {
+        if (!courseCode || !learnerNumber) {
+            return '';
+        }
+
+        return `LBC/DIP/${courseCode}/${String(referenceYear).slice(-2)}/${learnerNumber}`;
+    };
+
+    useEffect(() => {
+        if (!didMountReference.current) {
+            didMountReference.current = true;
+            return;
+        }
+
+        const course = courseOptions.find(c => c.id === parseInt(data.course_id));
+        const learner = learnerOptions.find((learner) => learner.id === parseInt(data.learner_id));
+
+        setData('reference_no', buildCertificateReference(course?.code, learner?.learner_id));
+    }, [data.course_id, data.learner_id, referenceYear]);
 
     // Load modules when component mounts or course changes
     useEffect(() => {

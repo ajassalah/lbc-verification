@@ -91,6 +91,7 @@
             left: 0;
             width: 100%;
             text-align: center;
+            white-space: nowrap;
         }
 
         .cert-course .course-line .offset-left {
@@ -120,7 +121,7 @@
 
         .cert-awarded {
             position: absolute;
-            top: 300pt;
+            top: 270pt;
             left: 0;
             width: 540pt;
             color: #444;
@@ -129,7 +130,7 @@
 
         .cert-name {
             position: absolute;
-            top: 330pt;
+            top: 300pt;
             left: 40pt;
             width: 460pt;
             color: #444;
@@ -140,17 +141,22 @@
 
         .cert-body {
             position: absolute;
-            top: 375pt;
-            left: 120pt;
-            width: 300pt;
+            top: 345pt;
+            left: 55pt;
+            width: 430pt;
             color: #444;
             font-size: 18px;
             line-height: 1.18;
         }
 
+        .cert-body .bold {
+            display: inline-block;
+            white-space: nowrap;
+        }
+
         .cert-grade {
             position: absolute;
-            top: 485pt;
+            top: 455pt;
             left: 200pt;
             width: 140pt;
             color: #444;
@@ -160,7 +166,7 @@
 
         .cert-date {
             position: absolute;
-            top: 520pt;
+            top: 490pt;
             left: 190pt;
             width: 160pt;
             color: #444;
@@ -533,7 +539,7 @@
         $certificateCourseLines = count($courseParts) === 2
             ? [
                 'primary' => $courseParts[0],
-                'secondary' => preg_split('/\s+/', trim($courseParts[1])),
+                'secondary' => [trim($courseParts[1])],
             ]
             : [$courseName];
         $courseTitleLine = function (string $text, string $class): string {

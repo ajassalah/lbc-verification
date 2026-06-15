@@ -147,7 +147,7 @@ class CertificateController extends Controller
 
         $validated = $request->validated();
 
-        if (! $request->user()?->allow_manual_learner_id) {
+        if (! $request->user()?->allow_manual_certificate_reference) {
             $validated['reference_no'] = $this->certificateReferenceNo(
                 Course::find($validated['course_id']),
                 Learner::find($validated['learner_id'])
@@ -204,6 +204,7 @@ class CertificateController extends Controller
             'learners' => LearnerResource::collection($learners),
             'mediumOfInstructionOptions' => DataOption::valuesFor(DataOption::MEDIUM_OF_INSTRUCTION),
             'modeOfStudyOptions' => DataOption::valuesFor(DataOption::MODE_OF_STUDY),
+            'referenceYear' => now()->format('y'),
         ]);
     }
 
@@ -215,8 +216,11 @@ class CertificateController extends Controller
         // Get validated data
         $validatedData = $request->validated();
 
-        if (! $request->user()?->allow_manual_learner_id) {
-            $validatedData['reference_no'] = $certificate->reference_no;
+        if (! $request->user()?->allow_manual_certificate_reference) {
+            $validatedData['reference_no'] = $this->certificateReferenceNo(
+                Course::find($validatedData['course_id']),
+                Learner::find($validatedData['learner_id'])
+            );
         }
 
         // Parse the modules_data to ensure it's valid JSON before saving
@@ -289,7 +293,12 @@ class CertificateController extends Controller
      */
     public function verify(Request $request, $reference_no)
     {
-        event(new CertificateVerificationAttempted($reference_no));
+        try {
+            event(new CertificateVerificationAttempted($reference_no));
+        } catch (\Throwable $exception) {
+            // Verification must not fail if admin notification tracking is unavailable.
+        }
+
         // Log the verification attempt
         $this->logVerificationAttempt($request, $reference_no);
 
@@ -341,11 +350,6 @@ class CertificateController extends Controller
      */
     private function logVerificationAttempt(Request $request, string $reference_no): void
     {
-        Log::info("Certificate verification attempt", [
-            'reference_no' => $reference_no,
-            'ip' => $request->ip(),
-            'user_agent' => $request->userAgent(),
-        ]);
         try {
             // Get IP and user agent
             $ip = $request->ip();
@@ -397,8 +401,7 @@ class CertificateController extends Controller
                     }
                 }
             } catch (\Exception $e) {
-                // If API call fails, we continue with null values
-                Log::warning("Failed to retrieve IP geolocation data: {$e->getMessage()}");
+                // If API call fails, we continue with null values.
             }
 
             // Create the log entry with all available data
@@ -407,9 +410,8 @@ class CertificateController extends Controller
                 'ip' => $ip,
                 'user_agent' => $userAgent,
             ], $geoData));
-        } catch (\Exception $e) {
-            // Don't interrupt certificate verification if logging fails
-            Log::error("Failed to log certificate verification attempt: {$e->getMessage()}");
+        } catch (\Throwable $exception) {
+            // Don't interrupt certificate verification if tracking fails.
         }
     }
 
