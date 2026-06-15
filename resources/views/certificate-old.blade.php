@@ -121,7 +121,7 @@
 
         .cert-awarded {
             position: absolute;
-            top: 270pt;
+            top: 288pt;
             left: 0;
             width: 540pt;
             color: #444;
@@ -130,7 +130,7 @@
 
         .cert-name {
             position: absolute;
-            top: 300pt;
+            top: 318pt;
             left: 40pt;
             width: 460pt;
             color: #444;
@@ -141,7 +141,7 @@
 
         .cert-body {
             position: absolute;
-            top: 345pt;
+            top: 363pt;
             left: 55pt;
             width: 430pt;
             color: #444;
@@ -150,13 +150,13 @@
         }
 
         .cert-body .bold {
-            display: inline-block;
-            white-space: nowrap;
+            display: block;
+            line-height: 1.18;
         }
 
         .cert-grade {
             position: absolute;
-            top: 455pt;
+            top: 473pt;
             left: 200pt;
             width: 140pt;
             color: #444;
@@ -166,7 +166,7 @@
 
         .cert-date {
             position: absolute;
-            top: 490pt;
+            top: 508pt;
             left: 190pt;
             width: 160pt;
             color: #444;
@@ -535,13 +535,46 @@
         $letterStartDate = $formatMonthYear($certificate->course_start_date);
         $letterEndDate = $formatMonthYear($certificate->course_end_date);
 
+        $splitCourseTitle = function (string $text, int $maxLength = 34): array {
+            $words = preg_split('/\s+/', trim($text));
+            $lines = [];
+            $currentLine = '';
+
+            foreach ($words as $word) {
+                if ($word === '') {
+                    continue;
+                }
+
+                $candidate = $currentLine === '' ? $word : $currentLine . ' ' . $word;
+
+                if ($currentLine !== '' && mb_strlen($candidate) > $maxLength) {
+                    $lines[] = $currentLine;
+                    $currentLine = $word;
+                    continue;
+                }
+
+                $currentLine = $candidate;
+            }
+
+            if ($currentLine !== '') {
+                $lines[] = $currentLine;
+            }
+
+            return $lines ?: [''];
+        };
+
         $courseParts = preg_split('/\s+in\s+/i', $courseName, 2);
         $certificateCourseLines = count($courseParts) === 2
             ? [
                 'primary' => $courseParts[0],
-                'secondary' => [trim($courseParts[1])],
+                'secondary' => $splitCourseTitle($courseParts[1]),
             ]
             : [$courseName];
+        $certificateTitleOffset = isset($certificateCourseLines['secondary'])
+            ? max(0, count($certificateCourseLines['secondary']) - 1) * 36
+            : 0;
+        $bodyCourseLines = $splitCourseTitle($courseName, 48);
+        $bodyCourseOffset = max(0, count($bodyCourseLines) - 1) * 22;
         $courseTitleLine = function (string $text, string $class): string {
             $escaped = e($text);
 
@@ -580,16 +613,18 @@
             @endif
         </div>
 
-        <div class="cert-awarded center">is awarded to</div>
-        <div class="cert-name center">{{ $learnerName }}</div>
-        <div class="cert-body center">
+        <div class="cert-awarded center" style="top: {{ 288 + $certificateTitleOffset }}pt;">is awarded to</div>
+        <div class="cert-name center" style="top: {{ 318 + $certificateTitleOffset }}pt;">{{ $learnerName }}</div>
+        <div class="cert-body center" style="top: {{ 363 + $certificateTitleOffset }}pt;">
             who has fulfilled the<br>
             course requirements of the institution of<br>
-            <span class="bold">{{ $courseName }}</span><br>
+            @foreach($bodyCourseLines as $line)
+                <span class="bold">{{ $line }}</span>
+            @endforeach
             examination with an overall grading of
         </div>
-        <div class="cert-grade center">"{{ $grade }}"</div>
-        <div class="cert-date center">{{ $awardedMonthYear }}</div>
+        <div class="cert-grade center" style="top: {{ 473 + $certificateTitleOffset + $bodyCourseOffset }}pt;">"{{ $grade }}"</div>
+        <div class="cert-date center" style="top: {{ 508 + $certificateTitleOffset + $bodyCourseOffset }}pt;">{{ $awardedMonthYear }}</div>
     </div>
 
     <div class="page">
