@@ -48,6 +48,15 @@ export default function Create({ auth, facultyOptions, moduleLevelOptions = [] }
         setData('modules', updatedModules);
     };
 
+    const moveModule = (fromIndex, toIndex) => {
+        if (toIndex < 0 || toIndex >= data.modules.length) return;
+
+        const updatedModules = [...data.modules];
+        const [module] = updatedModules.splice(fromIndex, 1);
+        updatedModules.splice(toIndex, 0, module);
+        setData('modules', updatedModules);
+    };
+
     const handleSubmit = (e) => {
         e.preventDefault();
         post(route('courses.store'));
@@ -224,6 +233,8 @@ export default function Create({ auth, facultyOptions, moduleLevelOptions = [] }
                                                 module={module}
                                                 updateModule={updateModule}
                                                 removeModule={removeModule}
+                                                moveModule={moveModule}
+                                                moduleCount={data.modules.length}
                                                 errors={errors}
                                                 levelOptions={moduleLevelOptions}
                                             />

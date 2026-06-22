@@ -8,6 +8,7 @@ use App\Http\Resources\CourseResource;
 use App\Models\Course;
 use App\Models\DataOption;
 use App\Models\Module;
+use App\Services\CourseCertificateSynchronizer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -115,9 +116,10 @@ class CourseController extends Controller
             $course = Course::create($validated);
 
             // Create modules for this course
-            foreach ($modules as $moduleData) {
+            foreach ($modules as $position => $moduleData) {
                 $moduleData['course_id'] = $course->id;
                 $moduleData['created_by'] = auth()->id();
+                $moduleData['position'] = $position;
                 $course->modules()->create($moduleData);
             }
 
@@ -233,13 +235,14 @@ class CourseController extends Controller
             }
 
             // Update or create modules
-            foreach ($modules as $moduleData) {
+            foreach ($modules as $position => $moduleData) {
                 $moduleData['unit_count'] = null;
                 $moduleData['credit_count'] = null;
                 $moduleData['description'] = null;
+                $moduleData['position'] = $position;
 
                 if (isset($moduleData['id'])) {
-                    $module = Module::find($moduleData['id']);
+                    $module = $course->modules()->whereKey($moduleData['id'])->firstOrFail();
                     $module->update($moduleData);
                 } else {
                     $moduleData['course_id'] = $course->id;
@@ -249,6 +252,8 @@ class CourseController extends Controller
             }
 
             $course->update(['total_credits' => 0]);
+
+            app(CourseCertificateSynchronizer::class)->sync($course);
 
             DB::commit();
 

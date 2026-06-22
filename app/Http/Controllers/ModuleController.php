@@ -6,6 +6,7 @@ use App\Models\Module;
 use App\Http\Requests\UpdateModuleRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Services\CourseCertificateSynchronizer;
 
 class ModuleController extends Controller
 {
@@ -69,6 +70,7 @@ class ModuleController extends Controller
             ]);
 
             $course->update(['total_credits' => 0]);
+            app(CourseCertificateSynchronizer::class)->sync($course);
 
             DB::commit();
 
@@ -103,6 +105,7 @@ class ModuleController extends Controller
             $module->delete();
 
             $course->update(['total_credits' => 0]);
+            app(CourseCertificateSynchronizer::class)->sync($course);
 
             DB::commit();
 
@@ -122,7 +125,8 @@ class ModuleController extends Controller
     public function getModulesByCourse($courseId)
     {
         $modules = Module::where('course_id', $courseId)
-            ->orderBy('year', 'asc')
+            ->orderBy('position')
+            ->orderBy('id')
             ->get();
 
         return response()->json($modules);

@@ -3,9 +3,19 @@ import InputLabel from '@/Components/InputLabel';
 import TextInput from '@/Components/TextInput';
 import InputError from '@/Components/InputError';
 import { motion } from 'framer-motion';
-import { TrashIcon } from '@heroicons/react/24/outline';
+import { ChevronDownIcon, ChevronUpIcon, TrashIcon } from '@heroicons/react/24/outline';
 
-const ModuleCard = ({ index, module, updateModule, removeModule, errors, levelOptions = [], canRemove = true }) => {
+const ModuleCard = ({
+    index,
+    module,
+    updateModule,
+    removeModule,
+    moveModule,
+    moduleCount,
+    errors,
+    levelOptions = [],
+    canRemove = true,
+}) => {
     const moduleErrors = {};
 
     // Format errors from Laravel's nested array format to match the module
@@ -37,15 +47,39 @@ const ModuleCard = ({ index, module, updateModule, removeModule, errors, levelOp
         >
             <div className="flex justify-between items-center mb-4">
                 <h3 className="text-lg font-semibold">Module {index + 1}</h3>
-                {canRemove && (
+                <div className="flex items-center gap-1">
                     <button
                         type="button"
-                        className="text-red-500 hover:text-red-700 transition-colors"
-                        onClick={() => removeModule(index)}
+                        className="rounded p-1 text-gray-500 transition-colors hover:bg-gray-100 hover:text-indigo-600 disabled:cursor-not-allowed disabled:opacity-30"
+                        onClick={() => moveModule(index, index - 1)}
+                        disabled={index === 0}
+                        title="Move module up"
+                        aria-label={`Move module ${index + 1} up`}
                     >
-                        <TrashIcon className="w-5 h-5" />
+                        <ChevronUpIcon className="w-5 h-5" />
                     </button>
-                )}
+                    <button
+                        type="button"
+                        className="rounded p-1 text-gray-500 transition-colors hover:bg-gray-100 hover:text-indigo-600 disabled:cursor-not-allowed disabled:opacity-30"
+                        onClick={() => moveModule(index, index + 1)}
+                        disabled={index === moduleCount - 1}
+                        title="Move module down"
+                        aria-label={`Move module ${index + 1} down`}
+                    >
+                        <ChevronDownIcon className="w-5 h-5" />
+                    </button>
+                    {canRemove && (
+                        <button
+                            type="button"
+                            className="rounded p-1 text-red-500 transition-colors hover:bg-red-50 hover:text-red-700"
+                            onClick={() => removeModule(index)}
+                            title="Remove module"
+                            aria-label={`Remove module ${index + 1}`}
+                        >
+                            <TrashIcon className="w-5 h-5" />
+                        </button>
+                    )}
+                </div>
             </div>            {/* Unit Reference, Units, and Name */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div className="md:col-span-1">

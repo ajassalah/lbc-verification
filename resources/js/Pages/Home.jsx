@@ -1,5 +1,6 @@
 import ErrorNotification from "@/Components/ErrorNotification";
 import ApplicationLogo from "@/Components/ApplicationLogo";
+import VerificationIntroVideo from "@/Components/VerificationIntroVideo";
 import InputError from "@/Components/InputError";
 import { Head, Link, useForm, usePage } from "@inertiajs/react";
 import { useEffect, useState } from "react";
@@ -84,6 +85,7 @@ export default function Home() {
 
     return (
         <>
+            <VerificationIntroVideo />
             {showErrorNotification && <ErrorNotification />}
 
             <Head title="LBC Certificate Verification" />

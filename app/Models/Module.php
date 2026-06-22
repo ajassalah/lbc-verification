@@ -12,6 +12,7 @@ class Module extends Model
 
     protected $fillable = [
         'course_id',
+        'position',
         'name',
         'code',
         'level',
@@ -23,6 +24,7 @@ class Module extends Model
     ];
 
     protected $casts = [
+        'position' => 'integer',
         'unit_count' => 'integer',
         'credit_count' => 'integer',
         'year' => 'integer',
