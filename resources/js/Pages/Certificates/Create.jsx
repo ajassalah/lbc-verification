@@ -2,12 +2,14 @@ import React, { useState, useEffect } from "react";
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import TextInput from '@/Components/TextInput';
+import DateInput from '@/Components/DateInput';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
 import PrimaryButton from '@/Components/PrimaryButton';
 import SecondaryButton from '@/Components/SecondaryButton';
 import { motion } from 'framer-motion';
 import axios from 'axios';
+import { certificateDateFields, formatDateForSubmission, formatDateInput } from '@/Utils/dateInput';
 
 const gradePointLabels = {
     'A+': '5.00',
@@ -34,7 +36,7 @@ export default function Create({
     const [years, setYears] = useState([]);
     const [loading, setLoading] = useState(false);
 
-    const { data, setData, post, reset, processing, errors } = useForm({
+    const { data, setData, post, reset, processing, errors, transform } = useForm({
         learner_id: '',
         course_id: '',
         reference_no: '',
@@ -204,6 +206,15 @@ export default function Create({
 
     const submit = e => {
         e.preventDefault();
+
+        transform((currentData) => ({
+            ...currentData,
+            ...Object.fromEntries(certificateDateFields.map((field) => [
+                field,
+                formatDateForSubmission(currentData[field]),
+            ])),
+        }));
+
         post(route('certificates.store'), {
             preserveScroll: true,
             onSuccess: () => reset(),
@@ -428,12 +439,15 @@ export default function Create({
 
                                 <motion.div variants={itemVariants}>
                                     <InputLabel htmlFor="awarding_date" value="Awarding Date" />
-                                    <TextInput
+                                    <DateInput
                                         id="awarding_date"
                                         name="awarding_date"
-                                        type="date"
+                                        type="text"
+                                        placeholder="dd/mm/yyyy"
+                                        inputMode="numeric"
+                                        maxLength={10}
                                         value={data.awarding_date}
-                                        onChange={(e) => setData('awarding_date', e.target.value)}
+                                        onChange={(value) => setData('awarding_date', formatDateInput(value))}
                                         className="mt-1 block w-full"
                                         required
                                     />
@@ -443,12 +457,15 @@ export default function Create({
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                     <motion.div variants={itemVariants}>
                                         <InputLabel htmlFor="course_start_date" value="Starting Date of Programme" />
-                                        <TextInput
+                                        <DateInput
                                             id="course_start_date"
                                             name="course_start_date"
-                                            type="date"
+                                            type="text"
+                                            placeholder="dd/mm/yyyy"
+                                            inputMode="numeric"
+                                            maxLength={10}
                                             value={data.course_start_date}
-                                            onChange={(e) => setData('course_start_date', e.target.value)}
+                                            onChange={(value) => setData('course_start_date', formatDateInput(value))}
                                             className="mt-1 block w-full"
                                         />
                                         <InputError message={errors.course_start_date} className="mt-2" />
@@ -456,12 +473,15 @@ export default function Create({
 
                                     <motion.div variants={itemVariants}>
                                         <InputLabel htmlFor="course_end_date" value="End Date of Programme" />
-                                        <TextInput
+                                        <DateInput
                                             id="course_end_date"
                                             name="course_end_date"
-                                            type="date"
+                                            type="text"
+                                            placeholder="dd/mm/yyyy"
+                                            inputMode="numeric"
+                                            maxLength={10}
                                             value={data.course_end_date}
-                                            onChange={(e) => setData('course_end_date', e.target.value)}
+                                            onChange={(value) => setData('course_end_date', formatDateInput(value))}
                                             className="mt-1 block w-full"
                                         />
                                         <InputError message={errors.course_end_date} className="mt-2" />
@@ -469,12 +489,15 @@ export default function Create({
 
                                     <motion.div variants={itemVariants}>
                                         <InputLabel htmlFor="date_of_exam" value="Date of Exam" />
-                                        <TextInput
+                                        <DateInput
                                             id="date_of_exam"
                                             name="date_of_exam"
-                                            type="date"
+                                            type="text"
+                                            placeholder="dd/mm/yyyy"
+                                            inputMode="numeric"
+                                            maxLength={10}
                                             value={data.date_of_exam}
-                                            onChange={(e) => setData('date_of_exam', e.target.value)}
+                                            onChange={(value) => setData('date_of_exam', formatDateInput(value))}
                                             className="mt-1 block w-full"
                                         />
                                         <InputError message={errors.date_of_exam} className="mt-2" />
@@ -490,12 +513,15 @@ export default function Create({
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         <div>
                                             <InputLabel htmlFor="completion_letter_date" value="Date" />
-                                            <TextInput
+                                            <DateInput
                                                 id="completion_letter_date"
                                                 name="completion_letter_date"
-                                                type="date"
+                                                type="text"
+                                                placeholder="dd/mm/yyyy"
+                                                inputMode="numeric"
+                                                maxLength={10}
                                                 value={data.completion_letter_date}
-                                                onChange={(e) => setData('completion_letter_date', e.target.value)}
+                                                onChange={(value) => setData('completion_letter_date', formatDateInput(value))}
                                                 className="mt-1 block w-full"
                                             />
                                             <InputError message={errors.completion_letter_date} className="mt-2" />

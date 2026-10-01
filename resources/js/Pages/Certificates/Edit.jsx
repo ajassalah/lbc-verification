@@ -2,12 +2,14 @@ import React, { useState, useEffect, useRef } from "react";
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import TextInput from '@/Components/TextInput';
+import DateInput from '@/Components/DateInput';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
 import PrimaryButton from '@/Components/PrimaryButton';
 import SecondaryButton from '@/Components/SecondaryButton';
 import { motion } from 'framer-motion';
 import axios from 'axios';
+import { certificateDateFields, formatDateForDisplay, formatDateForSubmission, formatDateInput } from '@/Utils/dateInput';
 
 const normalizeModulesData = (value) => {
     let parsed = value;
@@ -68,11 +70,11 @@ export default function Edit({
         learner_id: certificate ? certificate.learner_id : '',
         course_id: certificate ? certificate.course_id : '',
         reference_no: certificate ? certificate.reference_no : '',
-        course_start_date: certificate ? certificate.course_start_date : '',
-        course_end_date: certificate ? certificate.course_end_date : '',
-        awarding_date: certificate ? certificate.awarding_date : '',
-        date_of_exam: certificate ? certificate.date_of_exam : '',
-        completion_letter_date: certificate ? certificate.completion_letter_date : '',
+        course_start_date: formatDateForDisplay(certificate?.course_start_date),
+        course_end_date: formatDateForDisplay(certificate?.course_end_date),
+        awarding_date: formatDateForDisplay(certificate?.awarding_date),
+        date_of_exam: formatDateForDisplay(certificate?.date_of_exam),
+        completion_letter_date: formatDateForDisplay(certificate?.completion_letter_date),
         medium_of_instruction: certificate ? certificate.medium_of_instruction : '',
         mode_of_study: certificate ? certificate.mode_of_study : '',
         specialization: certificate ? certificate.specialization : '',
@@ -285,6 +287,10 @@ export default function Edit({
             modules_data: JSON.stringify(modulesData),
             cumulative_credits_earned: totalCredits,
             cumulative_grade_point_average: gradingType === 'Completed' ? 1 : 0,
+            ...Object.fromEntries(certificateDateFields.map((field) => [
+                field,
+                formatDateForSubmission(currentData[field]),
+            ])),
         }));
 
         // Submit the form
@@ -517,12 +523,15 @@ export default function Edit({
 
                                 <motion.div variants={itemVariants}>
                                     <InputLabel htmlFor="awarding_date" value="Awarding Date" />
-                                    <TextInput
+                                    <DateInput
                                         id="awarding_date"
                                         name="awarding_date"
-                                        type="date"
+                                        type="text"
+                                        placeholder="dd/mm/yyyy"
+                                        inputMode="numeric"
+                                        maxLength={10}
                                         value={data.awarding_date}
-                                        onChange={(e) => setData('awarding_date', e.target.value)}
+                                        onChange={(value) => setData('awarding_date', formatDateInput(value))}
                                         className="mt-1 block w-full"
                                         required
                                     />
@@ -532,12 +541,15 @@ export default function Edit({
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                     <motion.div variants={itemVariants}>
                                         <InputLabel htmlFor="course_start_date" value="Starting Date of Programme" />
-                                        <TextInput
+                                        <DateInput
                                             id="course_start_date"
                                             name="course_start_date"
-                                            type="date"
+                                            type="text"
+                                            placeholder="dd/mm/yyyy"
+                                            inputMode="numeric"
+                                            maxLength={10}
                                             value={data.course_start_date || ''}
-                                            onChange={(e) => setData('course_start_date', e.target.value)}
+                                            onChange={(value) => setData('course_start_date', formatDateInput(value))}
                                             className="mt-1 block w-full"
                                         />
                                         <InputError message={errors.course_start_date} className="mt-2" />
@@ -545,12 +557,15 @@ export default function Edit({
 
                                     <motion.div variants={itemVariants}>
                                         <InputLabel htmlFor="course_end_date" value="End Date of Programme" />
-                                        <TextInput
+                                        <DateInput
                                             id="course_end_date"
                                             name="course_end_date"
-                                            type="date"
+                                            type="text"
+                                            placeholder="dd/mm/yyyy"
+                                            inputMode="numeric"
+                                            maxLength={10}
                                             value={data.course_end_date || ''}
-                                            onChange={(e) => setData('course_end_date', e.target.value)}
+                                            onChange={(value) => setData('course_end_date', formatDateInput(value))}
                                             className="mt-1 block w-full"
                                         />
                                         <InputError message={errors.course_end_date} className="mt-2" />
@@ -558,12 +573,15 @@ export default function Edit({
 
                                     <motion.div variants={itemVariants}>
                                         <InputLabel htmlFor="date_of_exam" value="Date of Exam" />
-                                        <TextInput
+                                        <DateInput
                                             id="date_of_exam"
                                             name="date_of_exam"
-                                            type="date"
+                                            type="text"
+                                            placeholder="dd/mm/yyyy"
+                                            inputMode="numeric"
+                                            maxLength={10}
                                             value={data.date_of_exam || ''}
-                                            onChange={(e) => setData('date_of_exam', e.target.value)}
+                                            onChange={(value) => setData('date_of_exam', formatDateInput(value))}
                                             className="mt-1 block w-full"
                                         />
                                         <InputError message={errors.date_of_exam} className="mt-2" />
@@ -579,12 +597,15 @@ export default function Edit({
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         <div>
                                             <InputLabel htmlFor="completion_letter_date" value="Date" />
-                                            <TextInput
+                                            <DateInput
                                                 id="completion_letter_date"
                                                 name="completion_letter_date"
-                                                type="date"
+                                                type="text"
+                                                placeholder="dd/mm/yyyy"
+                                                inputMode="numeric"
+                                                maxLength={10}
                                                 value={data.completion_letter_date || ''}
-                                                onChange={(e) => setData('completion_letter_date', e.target.value)}
+                                                onChange={(value) => setData('completion_letter_date', formatDateInput(value))}
                                                 className="mt-1 block w-full"
                                             />
                                             <InputError message={errors.completion_letter_date} className="mt-2" />
